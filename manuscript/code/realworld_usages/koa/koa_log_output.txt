@@ -1,0 +1,3 @@
+LOG - capture start date
+set body
+LOG - GET / => 5

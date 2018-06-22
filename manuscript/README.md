@@ -1,0 +1,5 @@
+Generator is a new concept introduced to JavaScript in [ECMAScript 2015](http://www.ecma-international.org/ecma-262/6.0/) (or ES6). Generators are the new powerful tools which should be in each JavaScript developer's toolkit. Generators are mostly used in JavaScript frameworks and libraries. For example, [Koa](http://koajs.com) uses generators as middleware. Babel can use generators to [transpile](https://babeljs.io/docs/plugins/transform-async-to-generator/) `async/await` functions. But generators are not commonly used in application code yet. The main reason is that generators are not easy to understand and adopt in day-to-day development.
+
+This book focuses on real day-to-day development scenarios which can benefit from using generators.
+
+Most the code examples in this book are tested on Chrome browser and some of them are tested on NodeJS 6.7.0. These examples should also work on other browsers which support generators. Refer to [this page](http://kangax.github.io/compat-table/es6/#test-generators) for browser compatibility of generators.
