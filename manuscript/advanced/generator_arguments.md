@@ -1,8 +1,8 @@
-# Arguments of generator functions
+# Аргументы функций-генераторов
 
-Like other normal functions, generator functions can take arguments. These arguments can be used in `yield` expressions inside the generator functions.
+Как и обычные функции, функции-генераторы могут принимать аргументы. Эти аргументы можно использовать в выражениях `yield` внутри функции-генератора.
 
-In the code below, `seq` is a generator function with arguments `start` and `number`. `start` means the start number of generated values and `number` means the total number of generated values.
+В коде ниже функция-генератор `seq` принимает параметры `start` и `number`. Параметр `start` означает начальное число в генерируемой последовательности, а `number` — общее число сгенерированных значений.
 
 ```js
 function *seq(start = 0, number = 10) {
@@ -12,11 +12,11 @@ function *seq(start = 0, number = 10) {
 }
 
 debug(seq());
-// -> Output values from 0 to 9
+// -> Выведет значения от 0 до 9
 
 debug(seq(3));
-// -> Output values from 3 to 12
+// -> Выведет значения от 3 до 12
 
 debug(seq(3, 5));
-// -> Output values from 3 to 7
+// -> Выведет значения от 3 до 7
 ```
