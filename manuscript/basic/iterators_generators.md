@@ -1,22 +1,22 @@
-# Iterators & generators
+# Итераторы и генераторы
 
-From all the generators code above, you may wonder why we should use `next()` to get values from the generator objects and deal with the nonintuitive return value format `{value: 1, done: false}`. Meet iterators.
+Из всего вышеприведённого кода генераторов вы могли подумать, почему мы должны использовать `next()` для получения значений из объектов-генераторов и иметь дело с не интуитивно-понятным форматом возвращаемого значения — `{value: 1, done: false}`. Поэтому встречайте — итераторы.
 
-## Iterators
+## Итераторы
 
-Iterators are no strangers to developers. They already exist in different programming languages with similar names, e.g. Java [Iterator](https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html), Ruby [Enumerator](https://ruby-doc.org/core-2.3.1/Enumerator.html) and Python [Iterator Types](https://docs.python.org/2/library/stdtypes.html#iterator-types). Iterators can be used to iterate over items in a collection. Iterators maintain their own states regarding the current position in the target collection.
+Итераторы не по наслышке знакомы разработчикам. Они уже существуют в разных языках программирования с похожими названиями, например, [интерфейс Iterator](https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html) в Java, [класс Enumerator](https://ruby-doc.org/core-2.3.1/Enumerator.html) в Ruby и [типы итераторов](https://docs.python.org/2/library/stdtypes.html#iterator-types) в Python. Итераторы могут использоваться для перебора элементов в коллекции. Итераторы сохраняют своё внутреннее состояние относительно текущей позиции в целевой коллекции.
 
-An [iterator](http://www.ecma-international.org/ecma-262/6.0/#sec-iterator-interface) in ES6 is just an object which provides a `next()` method to get next item in the current iteration. `next()` method should return an object with two properties: `value` and `done`. So generator functions are actually factories of iterators.
+[Итератор](http://www.ecma-international.org/ecma-262/6.0/#sec-iterator-interface) в ES6 — это просто объект, который предоставляет метод `next()` для получения следующего элемента в текущей итерации. Метод `next()` должен возвращать объект с двумя свойствами: `value` и `done`. Таким образом, функции-генераторы фактически являются фабриками итераторов.
 
-## Iterables
+## Интерфейс Iterable
 
-[Iterables](http://www.ecma-international.org/ecma-262/6.0/#sec-iterator-interface) are objects which have property `@@iterator`. The value of `@@iterator` property is a function that returns an Iterator object.
+[Итерируемые (iterables) объекты](http://www.ecma-international.org/ecma-262/6.0/#sec-iterator-interface) — это объекты со свойством `@@iterator`. Значение свойства `@@iterator` — это функция, возвращающая объект Iterator.
 
-A generator object conforms to both the *Iterator* and *Iterable* interfaces.
+Объект-генератор реализует оба интерфейса: *Iterator* и *Iterable*.
 
-## Iterate generator objects
+## Интерация объектов-генераторов
 
-As generators are iterable, we can use other ES6 language features to interact with generator objects easily. Following examples use `values` generator function shown below.
+Поскольку генераторы являются итерируемыми, мы можем использовать другие языковые возможности ES6 для лёгкого взаимодействия с объектами-генераторами. В следующих примерах используется функция-генератор `values`, определённая ниже.
 
 ```js
 function *values() {
@@ -26,27 +26,27 @@ function *values() {
 }
 ```
 
-### `for-of` loops
+### Циклы `for-of`
 
-We can use `for-of` loops to easily iterate all the values in a generator object.
+Мы можем использовать цикл `for-of` для простой итерации всех значений в объекте-генераторе.
 
 ```js
 for (let value of values()) {
   console.log(value);
 }
-// -> Output 'a', 'b' and 'c'
+// -> Выведет 'a', 'b' и 'c'
 ```
 
-### Spread operator
+### Оператор расширения
 
-Generator objects can also be used with spread operator.
+Объекты-генераторы также могут использоваться с оператором расширения.
 
 ```js
-// Spread operation in array literals
+// Операция расширения в литералах массива
 [1, ...values(), 2]
 // -> [1, "a", "b", "c", 2]
 
-// Spread operation in function calls
+// Операция расширения в вызовах функций
 function join(x, y, z) {
   return x + y + z;
 }
@@ -54,9 +54,9 @@ join(...values());
 // -> "abc"
 ```
 
-### Work with new collection types
+### Работа с новыми типами коллекций
 
-Generator objects can be used to create new collection objects, e.g. `Set`, `WeakSet`, `Map` and `WeakMap`.
+Объекты-генераторы могут использоваться для создания новых объектов коллекции, например. `Set`, `WeakSet`, `Map` и `WeakMap`.
 
 ```js
 let set = new Set(values());
@@ -66,5 +66,5 @@ set.size;
 set.forEach(function(value) {
   console.log(value);
 });
-// -> Output 1, 2, 3
+// -> Выведет 1, 2, 3
 ```
