@@ -1,6 +1,6 @@
-# Basic generators {#basic-generators}
+# Базовые генераторы {#basic-generators}
 
-Let's start with a simple generator function. The difference between a generator function and a normal function declaration is the `*` between `function` and the function name.
+Начнём с простой функции-генератора. Разница между функцией-генератором и обычной функцией заключается в символе `*` между ключевым словом `function` и именем функции. 
 
 ```js
 function *sample() {
@@ -10,10 +10,10 @@ function *sample() {
 }
 ```
 
-I> We can either use `function* sample()` or `function *sample()` or `function * sample()`. It's up to the development team to choose the desired format.
-In this book, `function *sample()` is used as it's the default configuration in [ESLint](http://eslint.org/docs/rules/generator-star-spacing).
+I> Можно использовать `function* sample()`, `function *sample()` или `function * sample()`. Разработчики в команде могут выбрать формат, который им больше нравится.
+В этой книге используется вариант `function *sample()` как настройка по умолчанию в [ESLint](http://eslint.org/docs/rules/generator-star-spacing).
 
-Generator objects can return multiple values when `next()` method is invoked. Those values are specified using `yield` keyword. In the generator function above, three `yield` expressions can generate three values `1`, `2` and `3` when `next()` method of a generator object is invoked.
+Объект-генератор может отдавать несколько значений при каждом вызове метода `next()`. Эти значения определяются с помощью ключевого слова `yield`. В примере выше в функции-генераторе три выражения `yield` могут сгенерировать три значения `1`, `2` и `3` при вызове метода `next()` у объекта-генератора.
 
 ```js
 let func = sample();
@@ -29,13 +29,13 @@ func.next();
 // -> {value: undefined, done: true}
 ```
 
-In the code above, invoking the generator function `sample` generates a new generator object `func`. Execution of generator object `func` is initially suspended. When `next` method is invoked on the `func` object, it starts execution and runs to the first `yield` expression and returns the value `1` to the caller. The return value is an object with two properties: `value` and `done`. `value` contains the return value of `yield` expression, `done` can be used to check if there are more values to get. `done` property is `false` for the first three invocations of `next` method. For the fourth invocation, `done` property is set to `true`, which means there are no values anymore.
+В коде выше вызов функции-генератора `sample` генерирует объект-генератор `func`. Выполнение объекта-генератора `func` изначально приостановлено. Когда у объекта `func` вызывается метод `next`, он начинает выполняться, работает до первого выражения `yield` и возвращает значение `1`. Возвращается объект с двумя свойствами: `value` и `done`. `value` содержит значение, переданное в выражении `yield`, а `done` может использоваться для проверки, доступны ли ещё значения или нет. Свойство `done` равно `false` для первых трёх вызовов метода `next`. В четвёртом вызове свойство `done` становится равно `true`, это значает, что значений больше нет.
 
-## Suspend & resume execution
+## Приостановка и возобновление выполнения
 
-The power of generators comes from the ability to suspend and resume execution of generator objects. Each generator object can be viewed as a state machine. Each instance of the same generator function maintains its own state. Invoking `next()` on the generator object triggers state transition inside the object, which causes the object runs to the next `yield` expression. This continues until no more `yield` expressions found.
+Мощность генераторов заключается в возможности приостановить и возобновить выполнение объекта-генератора. Объект-генератор можно рассматривать как конечный автомат. Каждый экземпляр одной и той же функции-генератора хранит собственное состояние. Вызов метода `next()` у объекта-генератора запускает изменение состояния внутри объекта, в результате чего объект переходит к следующему выражению `yield`. Это продолжается до тех пор, пока не останется выражений `yield`.
 
-In the code below, two generator objects `func1` and `func2` maintain their own internal states. Invoking `next()` on one object doesn't affect the state of the other object.
+В коде ниже два объекта-генератора `func1` и `func2` поддерживают своё собственное состояние. Вызов `next()` у одного объекта не влияет на состояние другого.
 
 ```js
 let func1 = sample();
@@ -48,9 +48,9 @@ func1.next();
 // -> {value: 2, done: false}
 ```
 
-## Check types of generator functions and generator objects
+## Проверка типов функций-генераторов и объектов-генераторов
 
-We can use `Object.prototype.toString` to check the types of generator functions and generator objects.
+Для проверки типа функций-генераторов и объектов-генераторов можно использовать `Object.prototype.toString`.
 
 ```js
 function *sample() {
