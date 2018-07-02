@@ -1,8 +1,8 @@
--# Advanced generators
+-# Продвинутые генераторы
 
-After introducing basic concepts of generators, we are now looking into more advanced features of generators.
+После введения в базовые концепции генераторов, мы можем рассмотреть более продвинутые их возможности.
 
-The code in this chapter uses following `debug` function to log values to the console.
+В коде этой главы для вывода значений в консоль используется функция `debug`, приведённая ниже.
 
 ```js
 function debug(values) {

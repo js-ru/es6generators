@@ -1,8 +1,8 @@
-# `return` method
+# Метод `return`
 
-A generator object  has a `return` method to return given value and finish the generator. This behavior is similar with using `return` statement [inside of a generator](#return-in-generators).
+Объект-генератор имеет метод `return` для возврата значения и завершения генератора. Это поведение похоже на использование  выражения `return` [внутри генератора](#return-in-generators).
 
-Given the same `values` generator function shown below,
+Возьмём, к примеру, функцию-генератор, показанную ниже.
 
 ```js
 function *values() {
@@ -12,7 +12,7 @@ function *values() {
 }
 ```
 
-We can see how invoking `return` method finishes the generator object. The first `next()` invocation returns the first value `'a'`, then `func.return('d')` returns value `'d'` and finishes the generator, i.e. `done` property is set to `true`.
+Мы можем видеть, как вызов метода `return` завершает объект-генератор. Первый вызов `next()` возвращает первое значение `'a'`, затем `func.return('d')` возвращает значение `'d'` и завершает генератор, т.е. свойство `done` становится равным `true`.
 
 ```js
 let func = values();
@@ -24,7 +24,7 @@ func.next();
 // -> {value: undefined, done: true}
 ```
 
-`return` method can be invoked multiple times. Each invocation returns the value passed to `return()` method.
+Метод `return` можно вызывать несколько раз. Каждый вызов вернёт значение, переданное в метод `return()`.
 
 ```js
 let func = values();
