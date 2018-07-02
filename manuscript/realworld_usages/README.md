@@ -1,3 +1,3 @@
--# Real-world usages
+-# Реальное использование генераторов
 
-We are going to see how generators in real-world projects.
+Мы посмотрим на то, как можно использовать генераторы в реальных проектах.
