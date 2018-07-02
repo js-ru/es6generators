@@ -1,8 +1,8 @@
-# `throw` method
+# Метод `throw`
 
-A generator object also has a `throw` method to pass a value to it and trigger an exception to throw inside of the generator object. Both `throw` and `next` methods can send values to generator objects and change their behaviors. A value passed using `next` is treated as the result of last `yield` expression, but a value passed using `throw` is treated as replacing last `yield` expression with a `throw` statement.
+Объект-генератор имеет метод `throw`, чтобы передать в него значение и бросить исключение внутри объекта-генератора. Оба метода `throw` и `next` могут посылать значения в объекты-генераторы и менять их поведение. Значение, переданное в метод `next` становится результатом последнего выполненного выражения `yield`, а значение, переданное с помощью метода `throw`, заменяет последнее выражение `yield` на выражение `throw`.
 
-In the code below, when passing `hello` to the generator object using `throw('hello')`, an uncaught error is thrown and the generator object is finished. When `func.throw('hello')` is invoked, the last `yield` expression `yield x + 1` is replaced with `throw 'hello'`. Since the thrown object is not caught, it's propagated to the JavaScript engine.
+В коде ниже, когда мы передаём `hello` в объект-генератор с помощью `throw('hello')`, выбрасывается непойманное исключение и объект-генератор завершается. Когда вызывается `func.throw('hello')`, последнее выполненное выражение `yield`, а именно `yield x + 1`, заменяется на `throw 'hello'`. Т.к. брошенное исключение не поймано, оно обрабатывается движком JavaScript.
 
 ```js
 function *sample() {
@@ -22,9 +22,9 @@ func.next();
 // -> {value: undefined, done: true}
 ```
 
-Although it's possible to pass any types of values to `throw()`, it's recommended to pass [`Error`](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Error) objects for better debugging, e.g. `throw(new Error('boom!'))`.
+Хотя метод `throw()` может принимать значения любого типа, для упрощения отладки рекомендуется передавать в него объект [`Error`](https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Error), например, `throw(new Error('boom!'))`.
 
-We can use `try-catch` in the generator function to handle errors. In the code below, when `func.throw(new Error('boom!'))` is invoked, last `yield` expression `yield 2` is replaced with `throw new Error('boom!')`. The thrown object is caught by `try-catch`. So the execution continues until the next `yield` expression `yield 3`.
+Для обработки ошибок мы можем использовать `try-catch` в функции-генераторе. В коде ниже, когда вызывается `func.throw(new Error('boom!'))`, последнее выполненное выражение `yield` заменяется на `throw new Error('boom!')`. Конструктция `try-catch` ловит выброшенный объект исключения, поэтому код продолжает выполняться до следующего выражения `yield`, т.е. до `yield 3`.
 
 ```js
 function *sample() {
@@ -50,4 +50,4 @@ func.next();
 // -> {value: 4, done: false}
 ```
 
-If the value passed by `throw()` is caught and handled by the generator object, it can continue to generate all remaining values. Otherwise, it will finish with a uncaught error.
+Если объект-генератор поймал и обработал значение, переданное в `throw()`, он может продолжить генерировать все оставшиеся значения. В противном случае, он завершится с необработанной ошибкой.
