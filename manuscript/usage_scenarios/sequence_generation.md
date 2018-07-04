@@ -1,8 +1,8 @@
-# Sequence generation
+# Генерация последовательности
 
-Generator functions are very useful when generating complex sequences. We can encapsulate the generation logic in the function and shield the consumer from internal details.
+Функции-генераторы очень полезны для генерации сложных последовательностей. Мы можем инкапсулировать логику генерации в функцию и защитить пользователя от внутренних деталей.
 
-In the code below, generator function `numbers` has a complicated logic about generating values in the sequence.
+В коде ниже функция-генератор `numbers` имеет сложную логику генерации последовательности значений.
 
 ```js
 function *numbers() {
@@ -20,10 +20,10 @@ function *numbers() {
 }
 
 debug(numbers());
-// -> Output numbers: 0, 1, 2, 3, 4, 12, 49, 16, 27, 36, 98
+// -> Выведет числа: 0, 1, 2, 3, 4, 12, 49, 16, 27, 36, 98
 ```
 
-For more complicated scenarios, we can also use `yield*` to combine sequences. Suppose we have a system which stores users information in both file system and database, we can use following code to return a sequence of all users.
+Для более сложных сценариев мы также можем использовать `yield*` для комбинирования последовательностей. Предположим, что у нас есть система, которая хранит информацию о пользователях как в файловой системе, так и в базе данных, мы можем использовать следующий код, чтобы вернуть последовательность всех пользователей.
 
 ```js
 function *loadUsers() {
@@ -33,4 +33,4 @@ function *loadUsers() {
 }
 ```
 
-I> In real-world cases, `loadUsers` and `loadFromDb` usually return `Promise` objects. Then [co](#co) should be used.
+I> В реальных случаях функции `loadUsers` и `loadFromDb` обычно возвращают объекты `Promise`. Тогда следует использовать [co](#co).
