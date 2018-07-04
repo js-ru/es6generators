@@ -1,3 +1,3 @@
 # Babel
 
-[Babel](https://babeljs.io/) is a JavaScript compiler which allows developers to use future JavaScript features. Babel has different plugins to transform JavaScript code written with the latest standards into a version which is supported on today's platforms.
+[Babel](https://babeljs.io/) — компилятор (или точнее транспилятор) JavaScript, позволяющий разработчикам использовать будущие возможности JavaScript. У Babel имеются различные плагины для преобразования JavaScript-кода, написанного с использованием последних стандартов, в код, поддерживаемый на используемых сегодня платформах.
