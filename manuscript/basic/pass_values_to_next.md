@@ -1,6 +1,6 @@
-# Pass values to `next()`
+# Передача значений в `next()`
 
-Let's start from another simple generator function `doMath`. If we just look at the code, we may think that after invoking `next()` on the generator object, the value of `x` should be `1`, the value of `y` should be `11` and the value of `z` should be `110`. It's just simple math, right???
+Начнем с другой простой функции-генератора `doMath`. Если мы просто посмотрим на код ниже, может показаться, что после вызова `next()` у объекта-генератора, значение `x` должно быть` 1`, значение `y` должно быть` 11`, а значение `z` должно быть` 110`. Ведь это просто обычная математика, верно?
 
 ```js
 function *doMath() {
@@ -10,7 +10,7 @@ function *doMath() {
 }
 ```
 
-But the actual result doesn't match what we would expect. As shown in the code below, the values are `1`, `NaN` and `NaN`.
+Но фактический результат не совпадает с ожидаемым. Как показано в приведённом ниже коде, будут выведены следующие значения: `1`,` NaN` и `NaN`.
 
 ```js
 let func = doMath();
@@ -24,11 +24,11 @@ func.next();
 // -> {value: undefined, done: true}
 ```
 
-The key to understanding the actual result is that value passed to `next()` invocation is the actually used value of last `yield` expression. Since we didn't pass any argument when invoking `next()`, so the value of each `yield` expression is actually `undefined`.
+Ключ к пониманию реального результата заключается в том, что значение, переданное в вызов `next()`, становится результатом последнего выполненного выражения `yield`. Но поскольку мы ничего не передавали при вызове `next()`, значением каждого выражения `yield` будет `undefined`.
 
-For the first `next()` invocation, there is no last `yield` expression, so the value is actually ignored. For the second `next()` invocation, value of last `yield` expression, i.e. `yield 1` is set to `undefined`, which sets `x` to `undefined`, then sets the result of `yield x + 10` to `NaN`. For the third `next()` invocation, value of last `yield` expression, i.e. `yield x + 10` is set to `undefined`, which sets `y` to `undefined`, then sets the result of `yield y * 10` to `NaN`.
+При первом вызове `next()` ещё нет последнего выражения `yield`, поэтому это значение по сути игнорируется. При втором вызове `next()` значение последнего выполненного выражения `yield`, то есть` yield 1`, равно `undefined`, поэтому `x` присваивается значение `undefined`, а результатом выражение `yield x + 10` становится `NaN`. При третьем вызове `next()` значение последнего выполненного выражения `yield`, то есть` yield x + 10` равно  `undefined`, поэтому `y` присваивается значение `undefined`, а результатом `yield y * 10` становится `NaN`.
 
-Now we can try to pass a value when invoking `next()` method on a generator object. In the code below, the second `next()` invocation `func.next(1)` passes `1` to the generator object, so value `1` is set as the value of `yield 1`, which sets `x` to `1`, then the result of this `next()` will be `11`. For the third `next()` invocation `func.next(2)`, `2` is passed as the value of `yield x + 10`, which sets `y` to `2`, then the result of this `next()` will be `20`.
+Теперь мы можем попробовать передать значение в вызов метода `next()` у объекта-генератора. В приведённом ниже коде второй вызов `next()` — `func.next(1)` — передает `1` объекту-генератору, поэтому значение `1` устанавливается в качестве значения для выражения `yield 1`, которое теперь присваивает `x ` значение `1`, и поэтому результатом этого вызова `next()` будет `11`. При третьем вызове `next()` — `func.next(2)` — `2` передаётся в качестве значения для выражения `yield x + 10`, которое присваивает `y` значение `2`, и тогда результатом этого вызова `next()` будет `20`.
 
 ```js
 let func = doMath();
