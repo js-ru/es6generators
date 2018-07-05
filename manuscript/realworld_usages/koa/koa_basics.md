@@ -1,4 +1,4 @@
-## Koa basics
+## Koa basics {#koa-basics}
 
 Koa is very easy to configure and use. Each application creates different middleware to handle requests and generate responses. Each middleware is a generator function and registered using `use()` of Koa application. Middleware are processed in a chain with the same order as they are registered. Each middleware can access context information using `this`, e.g. `request`, `response`, `method` and `url`.
 

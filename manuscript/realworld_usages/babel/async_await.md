@@ -22,11 +22,13 @@ async function foo() {
 }
 ```
 
-After applying the plugin, the output is shown as below. The transformation is straightforward and relies on a helper method `_asyncToGenerator`. `async` function is transformed into generator function and `await` is transformed into `yield`. The `_asyncToGenerator` helper is responsible for transforming generator functions into a regular function that returns a `Promise`.
+After applying the plugin, the output is shown as below.
+
+> You can also view the transformed result [online](https://babeljs.io/repl#?babili=false&browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=IYZwngdgxgBAZgV2gFwJYHsL3egFAShgG8AoGGYAd2FWRgCNgAnAgbhIF8g&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&sourceType=module&lineWrap=true&presets=stage-2&prettier=false&targets=&version=6.26.0&envVersion=).
+
+The transformation is straightforward and relies on a helper method `_asyncToGenerator`. `async` function is transformed into generator function and `await` is transformed into `yield`. The `_asyncToGenerator` helper is responsible for transforming generator functions into a regular function that returns a `Promise`.
 
 ```js
-"use strict";
-
 let foo = (() => {
   var _ref = _asyncToGenerator(function* () {
     yield bar();
@@ -37,7 +39,7 @@ let foo = (() => {
   };
 })();
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 ```
 
-From the [source code](https://github.com/babel/babel/blob/master/packages/babel-helpers/src/helpers.js#L216) of `asyncToGenerator`, we can see that it transforms a generator function into a `Promise` chain.
+From the [source code](https://github.com/babel/babel/blob/master/packages/babel-helpers/src/helpers.js#L240) of `asyncToGenerator`, we can see that it transforms a generator function into a `Promise` chain.
