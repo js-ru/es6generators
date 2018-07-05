@@ -1,8 +1,9 @@
 # Fail-fast task queue
+# Очередь задач с ранним оповещением о сбоях
 
-We can use generator functions to create a simple fail-fast task queue and avoid recursive calls. The task queue is fail-fast, so subsequent tasks shouldn't be executed when a task failed.
+Мы можем использовать функции-генераторы для создания простой очереди задач с ранним оповещением о сбоях (fail-fast) и избежать рекурсивных вызовов. Если очередь реализует схему раннего оповещения о сбоях, то в случае сбоя в одной задаче следующие задачи не выполняются. 
 
-We use the following code to create tasks using `setTimeout` and `Promise`. The task fails when `value` is greater than or equals to `5`.
+Мы используем следующий код для создания задач с помощью `setTimeout` и `Promise`. В задаче происходит сбой, если значение `value` больше или равно `5`.
 
 ```js
 module.exports = function createTask(value, timeout) {
@@ -12,20 +13,20 @@ module.exports = function createTask(value, timeout) {
         console.log('value => ' + value);
         resolve(value);
       } else {
-        reject(new Error('value to large!'));
+        reject(new Error('Значение слишком большое!'));
       }
     }, timeout);
   });
 }
 ```
 
-The values used for testing are simple numbers.
+Значения для тестирования — обычные числа.
 
 ```js
 module.exports = [1, 2, 3, 4, 5, 6, 7];
 ```
 
-We can implement the task queue using recursive calls.
+Мы можем реализовать очередь задач, используя рекурсивные вызовы.
 
 ```js
 const createTask = require('./createTask');
@@ -44,7 +45,7 @@ function runTask(values) {
 runTask(values);
 ```
 
-We can also implement it using generator functions and `co`.
+Мы также можем реализовать её с помощью функций-генераторов и `co`.
 
 ```js
 const co = require('co');
