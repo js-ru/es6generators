@@ -28,6 +28,7 @@ async function foo() {
 
 Преобразование очевидное и зависит от вспомогательного метода `_asyncToGenerator`. Функция `async` преобразуется в функцию генератора, а `await` превращается в `yield`. Вспомогательный метод `_asyncToGenerator` отвечает за преобразование функций-генераторов в обычные функции, которые возвращают `Promise`.
 
+
 ```js
 let foo = (() => {
   var _ref = _asyncToGenerator(function* () {
@@ -43,3 +44,4 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 ```
 
 Из [исходного кода](https://github.com/babel/babel/blob/master/packages/babel-helpers/src/helpers.js#L240) функции `asyncToGenerator` мы видим, что она преобразует функцию-генератор в цепочку из `Promise`.
+=======
