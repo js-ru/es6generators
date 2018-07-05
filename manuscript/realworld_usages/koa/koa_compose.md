@@ -1,12 +1,12 @@
 ## `koa-compose`
 
-I> The code below is based on an earlier version of `koa-compose`. The latest version has changed to use `Promise` instead of generators. However, the code is still valuable for understanding generators.
+I> Код ниже основан на более ранней версии `koa-compose`. Последняя версия изменилась в пользу использования `Promise` вместо генераторов. Тем не менее, код по-прежнему пригодится для понимания генераторов.
 
-[`koa-compose`](https://github.com/koajs/compose) is the small library which does the composition of middleware generator functions. Its [source code](https://github.com/koajs/compose/blob/v2.x/index.js) is very simple, only 29 sloc. `compose` is the main method to compose middleware. The argument `middleware` is an array of middleware generator functions in the order of registration. The return value of `compose` method is a generator function with argument `next`. `next` is an optional generator function which is the last middleware in the chain.
+[`koa-compose`](https://github.com/koajs/compose) —небольшая библиотека, которая объединяет функции-генераторы мидлваров. Его [исходный код](https://github.com/koajs/compose/blob/v2.x/index.js) очень простой, всего 29 непустых строк кода. `compose` — основной метод для формирования мидлваров. Аргумент `middleware` — массив функций-генераторов мидлваров в порядке регистрации. Возвращаемое значение метода `compose` — функция-генератор с аргументом `next`. `next` — необязательная функция-генератор, которая является последним мидлваром в цепочке.
 
 ```js
-function compose(middleware){
-  return function *(next){
+function compose(middleware) {
+  return function *(next) {
     if (!next) next = noop();
 
     var i = middleware.length;
@@ -22,8 +22,8 @@ function compose(middleware){
 function *noop(){}
 ```
 
-Let's go through the generator function code line by line. The first line `if (!next) next = noop();` sets `next` to a do-nothing generator function `noop` if it's `null`. `i` is the loop variable for array `middleware` starting from the last middleware in the array. In the `while` loop, the generator function of each middleware is invoked with the current value of `next` as the argument, the returned generator object is set as the new value of `next`. Then `yield*` is used to delegate to final `next` generator object.
+Давайте построчно пройдёмся через код функции-генератора. Первая строка `if (!next) next = noop();` устанавливает `next` в функцию-генератор, которая ничего не делает, `noop`, если значение равно `null`. `i` - это переменная цикла массива `middleware`, начиная с последнего мидлвара в массиве. В цикле `while` функция-генератор каждого мидлвара вызывается с текущим значением `next` в качестве аргумента, возвращаемый объект-генератор присваивается в виде нового значения для `next`. Затем `yield*` используется для делегирования на завершающий объект-генератора `next`.
 
-We'll see how middleware are used in the sample application of [Koa basics](#koa-basics). The `middleware` array contains two generator functions, `log` and `setBody`. In the `while` loop, generator function `setBody` is invoked first with the argument `next` set to `noop` and `next` is set to the generator object of `setBody`. Then generator function `log` is invoked with the argument `next` set to the generator object of `setBody` and `next` is set to the generator object of `log`. The last `yield* next` expression delegates to the generator object of `log`.
+Посмотрим, как мидлвар используется в примере приложения из [основ Koa](#koa-basics). Массив `middleware` содержит две функции-генераторы: `log` и `setBody`. В цикле `while` функция-генератор `setBody` вызывается сначала с аргументом `next`, установленным в `noop`, а `next` устанавливается в объект-генератор `setBody`. Затем вызывается функция-генератор `log` с аргументом `next`, установленным в объект-генератор `setBody`, а `next` устанавливается в объект-генератор `log`. Последнее выражение `yield* next` делегирует выполнение объекту-генератору `log`.
 
-The returned generator function of `compose` is turned into a regular function that returns a `Promise` using `co.wrap` from [co](#co). The wrapped function is the actual request handler. When a request comes in, the generator object of `log` starts execution first and runs until the `yield next`, so the start time is recorded. `next` is a generator object of `setBody`, invoking `yield next` triggers the execution of `setBody` and set the response body. Finally, the generator object of `log` resumes execution and calculate the duration.
+Возвращенная функция-генератор `compose` превращается в обычную функцию, возвращающая `Promise`, используя `co.wrap` из [co](#co). Обёрнутая функция является фактическим обработчиком запросов. Когда приходит запрос, объект-генератор `log` запускает выполнение первым и работает до выражения `yield next`, таким образом записывается время начала запроса. `next` — это объект-генератор `setBody`, вызывающий `yield next`, запускает выполнение `setBody` и задаёт тело ответа. Наконец, объект-генератор `log` возобновляет выполнение и вычисляет продолжительность запроса.
