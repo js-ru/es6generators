@@ -1,8 +1,8 @@
-## Transform `async/await`
+## Преобразование `async/await`
 
-Babel has a [async to generator plugin](https://babeljs.io/docs/plugins/transform-async-to-generator/) which transforms `async` functions into generator functions. We'll use a simple NodeJS application to demonstrate the usage of this Babel plugin.
+У Babel есть [плагин async-to-generator](https://babeljs.io/docs/plugins/transform-async-to-generator/), преобразующий функции `async` в функции-генераторы. Мы будем использовать простое приложение на Node.js, чтобы продемонстрировать использование этого плагина Babel.
 
-The code below shows the `.babelrc` file.
+В приведённом ниже коде показан файл `.babelrc`.
 
 ```json
 {
@@ -14,7 +14,7 @@ The code below shows the `.babelrc` file.
 }
 ```
 
-Given JavaScript code shown below,
+Учитывая приведенный ниже JavaScript-код,
 
 ```js
 async function foo() {
@@ -22,11 +22,12 @@ async function foo() {
 }
 ```
 
-After applying the plugin, the output is shown as below.
+После применения плагина вывод будет такой, как показано ниже. 
 
-> You can also view the transformed result [online](https://babeljs.io/repl#?babili=false&browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=IYZwngdgxgBAZgV2gFwJYHsL3egFAShgG8AoGGYAd2FWRgCNgAnAgbhIF8g&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&sourceType=module&lineWrap=true&presets=stage-2&prettier=false&targets=&version=6.26.0&envVersion=).
+> Вы также можете просмотреть преобразованный результат [онлайн](https://babeljs.io/repl#?babili=false&browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=IYZwngdgxgBAZgV2gFwJYHsL3egFAShgG8AoGGYAd2FWRgCNgAnAgbhIF8g&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&sourceType=module&lineWrap=true&presets=stage-2&prettier=false&targets=&version=6.26.0&envVersion=).
 
-The transformation is straightforward and relies on a helper method `_asyncToGenerator`. `async` function is transformed into generator function and `await` is transformed into `yield`. The `_asyncToGenerator` helper is responsible for transforming generator functions into a regular function that returns a `Promise`.
+Преобразование очевидное и зависит от вспомогательного метода `_asyncToGenerator`. Функция `async` преобразуется в функцию-генератор, а `await` превращается в `yield`. Вспомогательный метод `_asyncToGenerator` отвечает за преобразование функций-генераторов в обычные функции, которые возвращают `Promise`.
+
 
 ```js
 let foo = (() => {
@@ -42,4 +43,4 @@ let foo = (() => {
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 ```
 
-From the [source code](https://github.com/babel/babel/blob/master/packages/babel-helpers/src/helpers.js#L240) of `asyncToGenerator`, we can see that it transforms a generator function into a `Promise` chain.
+Из [исходного кода](https://github.com/babel/babel/blob/master/packages/babel-helpers/src/helpers.js#L240) функции `asyncToGenerator` мы видим, что она преобразует функцию-генератор в цепочку из `Promise`.
