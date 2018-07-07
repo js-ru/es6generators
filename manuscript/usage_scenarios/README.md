@@ -1,3 +1,3 @@
--# Usage scenarios
+-# Сценарии использования
 
-In this chapter, we are going to see some common usage scenarios for generators.
+В этой главе мы рассмотрим некоторые распространённые сценарии использования генераторов.
