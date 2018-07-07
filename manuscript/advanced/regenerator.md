@@ -1,5 +1,3 @@
 # regenerator
 
-If generator functions are not supported on the target platform, we can use [regenerator](https://facebook.github.io/regenerator/) to transpile generator functions into ES5. Babel also has a [transform-regenerator](http://babeljs.io/docs/plugins/transform-regenerator/) plugin to perform the transformation. If you use Babel [preset ES2015](http://babeljs.io/docs/plugins/preset-es2015/), then this plugin is already included.
-
- 
+Если функции-генераторы не поддерживаются на целевой платформе, можно использовать [regenerator](https://facebook.github.io/regenerator/) для транспиляции функций-генераторов в ES5. У Babel также есть плагин [transform-regenerator](http://babeljs.io/docs/plugins/transform-regenerator/) для выполнения этого преобразования. Если вы используете Babel [пресет ES2015](http://babeljs.io/docs/plugins/preset-es2015/), то этот плагин уже включён.
