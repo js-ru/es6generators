@@ -1,37 +1,37 @@
-## Koa basics {#koa-basics}
+## Основы Koa {#koa-basics}
 
-Koa is very easy to configure and use. Each application creates different middleware to handle requests and generate responses. Each middleware is a generator function and registered using `use()` of Koa application. Middleware are processed in a chain with the same order as they are registered. Each middleware can access context information using `this`, e.g. `request`, `response`, `method` and `url`.
+Koa — очень лёгкий в настройке и в использовании фреймворк. Каждое приложение создаёт разный мидлвар для обработки запросов и генерации ответов. Каждый мидлвар — это функция-генератор, которая регистрируется с использованием `use()` в приложении Koa. Мидлвары обрабатываются последовательно в том порядком, в котором они зарегистрированы. Каждый мидлвар может получить доступ к данным контекста, используя `this`, например, это могут быть `request`,` response`, `method` и `url`.
 
-The code below is a simple Koa application. It registers two middleware generator functions, the first one is used to log request processing time and the second one is used to set the response body to `Hello World`.
+Код ниже — это простое приложение на Koa. Оно регистрирует две функции-генератора мидлвара: первая используется для логирования времени обработки запроса, а вторая используется для установки тела ответа `Привет, мир`.
 
 ```js
 var koa = require('koa');
 var app = koa();
 
-app.use(function *log(next){
-  console.log('LOG - capture start date');
+app.use(function *log(next) {
+  console.log('ЛОГИРОВАНИЕ — запись даты начала запроса');
   var start = new Date;
   yield next;
   var ms = new Date - start;
-  console.log('LOG - %s %s => %s', this.method, this.url, ms);
+  console.log('ЛОГИРОВАНИЕ — %s %s => %s', this.method, this.url, ms);
 });
 
-app.use(function *setBody(){
-  console.log('set body');
-  this.body = 'Hello World';
+app.use(function *setBody() {
+  console.log('Установка тела ответа');
+  this.body = 'Привет, мир';
 });
 
 app.listen(3000);
 ```
 
-Each middleware generator function can take an extra argument which represents the next middleware in the chain. If a middleware generator function needs to intercept execution of downstream middleware in the chain, it can perform certain tasks first, then call `yield` to delegate to other middleware, then perform other tasks after downstream middleware finish. The logging middleware generator function in the code above demonstrates this pattern. It records start time when a request comes in, then it calls `yield next` for delegation, finally it records the finish time and calculates the duration.
+Каждая функция-генератор мидлвара может принимать дополнительный аргумент, который представляет собой следующий мидлвар в цепочке. Если функции-генератору мидлвара потребуется перехватить выполнение последующего мидлвара в цепочке, она сначала может выполнить определённые задачи, а затем вызвать `yield` для делегирования выполнения другому мидлвару, после чего выполнить оставшиеся задачи после завершения следующего мидлвара. Функция-генератор мидлвара логирования в приведённом выше коде демонстрирует этот алгоритм действий. Сначала записывается время начала, когда приходит запрос, затем вызывается `yield next` для передачи выполнения следующему мидлвару, и, наконец, записывается время завершения и происходит вычисление продолжительности запроса.
 
-After accessing the `http://localhost:3000`, the console log looks like below:
+После перехода на адрес `http://localhost:3000` в консоли будет выведено примерно следующее:
 
 ```plaintext
-LOG - capture start date
-set body
-LOG - GET / => 5
+ЛОГИРОВАНИЕ - запись даты начала запроса
+Установка тела ответа
+ЛОГИРОВАНИЕ - GET / => 5
 ```
 
-I> If you know about [AOP](https://en.wikipedia.org/wiki/Aspect-oriented_programming), then middleware with `yield` expression is similar with [around advice](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/aop.html#aop-ataspectj-around-advice).
+I> Если вы знаете про [АОП](https://ru.wikipedia.org/wiki/%D0%90%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D0%BD%D0%BE-%D0%BE%D1%80%D0%B8%D0%B5%D0%BD%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D0%BE%D0%B5_%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5), то мидлвар с выражением `yield` похож на [around advice](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/aop.html#aop-ataspectj-around-advice).
