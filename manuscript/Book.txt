@@ -29,4 +29,5 @@ usage_scenarios/task_queue.md
 
 {backmatter}
 
-bonus/articles.md
+bonus/README.md
+bonus/test-article/README.md
