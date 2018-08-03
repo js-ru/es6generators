@@ -1,4 +1,9 @@
+{frontmatter}
+
 README.md
+
+{mainmatter}
+
 basic/README.md
 basic/basic_generators.md
 basic/pass_values_to_next.md
@@ -21,3 +26,8 @@ realworld_usages/babel/async_await.md
 usage_scenarios/README.md
 usage_scenarios/sequence_generation.md
 usage_scenarios/task_queue.md
+
+{backmatter}
+
+bonus/README.md
+bonus/test-article/README.md
