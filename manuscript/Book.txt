@@ -30,4 +30,4 @@ usage_scenarios/task_queue.md
 {backmatter}
 
 bonus/README.md
-bonus/test-article/README.md
+bonus/understanding_generators_in_es6_javascript_with_examples/README.md

@@ -1,7 +1,7 @@
 # Understanding Generators in ES6 JavaScript with Examples
 
-*Original: [Understanding Generators in ES6 JavaScript with Examples, Arfat Salman](https://codeburst.io/understanding-generators-in-es6-javascript-with-examples-6728834016d5)*
-*Date: 2018-04-23*
+*Перевод статьи Arfat Salman: [Understanding Generators in ES6 JavaScript with Examples](https://codeburst.io/understanding-generators-in-es6-javascript-with-examples-6728834016d5)*
+*Дата публикации: 23.04.2018*
 
 ES6 introduced a new way of working with functions and iterators in the form of **Generators (or generator functions)**. A generator is a function that **can stop midway** and then continue *from where it stopped*. **In short, a generator *appears* to be a function but it behaves like an iterator**.
 
