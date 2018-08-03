@@ -1,3 +1,0 @@
-# Test Article
-
-Blah blah...

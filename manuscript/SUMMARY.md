@@ -23,3 +23,5 @@
 * [Usage scenarios](usage_scenarios/README.md)
   * [Sequence generation](usage_scenarios/sequence_generation.md)
   * [Fail-fast task queue](usage_scenarios/task_queue.md)
+* [Бонус: переводы статей по генераторам](bonus/README.md)
+  * [Понимание генераторов в JavaScript ES6 на примерах](bonus/understanding_generators_in_es6_javascript_with_examples/README.md)
