@@ -1,4 +1,4 @@
-# Understanding Generators in ES6 JavaScript with Examples
+# Понимание генераторов в JavaScript ES6 на примерах
 
 *Перевод статьи Arfat Salman: [Understanding Generators in ES6 JavaScript with Examples](https://codeburst.io/understanding-generators-in-es6-javascript-with-examples-6728834016d5)*
 *Дата публикации: 23.04.2018*
