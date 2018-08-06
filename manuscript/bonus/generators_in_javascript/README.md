@@ -34,7 +34,7 @@ The `function*` and `yield` keywords are unique to a generator. Generators are d
 
 On **line 1**, we use the `function*` to create a generator. **Line 4** uses the yield keyword which produces a value on request. At **Line 7**, we call the generator function. Calling a generator function doesn’t execute it, instead it creates an iterator object which helps us interact with the generator. Follow the flowchart below to understand how it works.
 
-![Flow of code snippet 1](https://cdn-images-1.medium.com/max/1000/1*VavjYU92ms8t7sjUQ1egrw.png "Flow of code snippet 1")
+![Flow of code snippet 1](images/generators_in_javascript-1.png "Flow of code snippet 1")
 
 NOTE : In the code chunk we used, it would never reach `gen.done = True` since it is inside an infinite loop.
 
@@ -67,7 +67,7 @@ const result3 = gen.next();
 
 **Line 1** declares a generator which has two `yield` statements in it. On **line 6**, an iterator object is created which executes the generator to the point of it’s first `yield` statement. After that, at **line 8**, **line 10** and **line 12**, generator is activated and a value is requested.
 
-![Generator’s state](https://cdn-images-1.medium.com/max/1000/1*8UJX4kwMe1KzkdDoPaLM1A.png "Generator’s state")
+![Generator’s state](images/generators_in_javascript-2.png "Generator’s state")
 
 As soon as the iterator is created, generator goes into a suspended start state. After the first `gen.next()` the generator goes into execution mode and after finishing the `yield` request, suspends its execution. When it gets another `gen.next()` it executes and after being done with that request, it goes into a suspended yield. This cyclic process continues till we reach the return statement or till no more code is left to execute. At that point the generator goes into a completed state.
 
@@ -79,23 +79,23 @@ Figure 1 is a snapshot of how the execution context and the lexical environments
 
 In Step 1, the global context executes and because of variable hoisting we have the 'result' variables and the `gen` object initialized to `undefined`.
 
-![Figure 1](https://cdn-images-1.medium.com/max/1000/1*hGy0bLpuMx9v7KIpIoEA5Q.png "Figure 1")
+![Figure 1](images/generators_in_javascript-3.png "Figure 1")
 
 As **line 6** executes, an iterator object is created and the generator goes into a suspended start state. See Figure 2.
 
-![Figure 2](https://cdn-images-1.medium.com/max/1000/1*0w7QnRf_bxbbH87DZD4s2Q.png "Figure 2")
+![Figure 2](images/generators_in_javascript-4.png "Figure 2")
 
 After **line 6**, the generator context is popped off the execution stack but isn’t discarded because `gen` keeps a reference to it. This is still at the point before any of the `yield` statements are executed. See Figure 3 and follow the dotted line in the environment to see how `myGeneration` is kept active despite of being popped off the stack.
 
-![Figure 3](https://cdn-images-1.medium.com/max/1000/1*WGRDxOG0Cnk08XzVXvTgHA.png "Figure 3")
+![Figure 3](images/generators_in_javascript-5.png "Figure 3")
 
 When the first call to `gen.next()` is made in the global execution context, unlike regular functions, generators reactivate the matching execution context. The `myGenerator()` context is placed on the top of the stack to continue its execution from the point it left off.
 
-![Figure 4](https://cdn-images-1.medium.com/max/1000/1*RQzBLGw5unA74QIlY5hXrw.png "Figure 4")
+![Figure 4](images/generators_in_javascript-6.png "Figure 4")
 
 After it returns an object to return with the `value` property and the `done` property, it is again popped off the stack but not discarded since `gen` holds a reference to it. This time the generator goes into a suspended yield state and patiently waits till another request is made. Figure 5 shows a snapshot of how the context/environment look like at this stage.
 
-![Figure 5](https://cdn-images-1.medium.com/max/1000/1*AHwIpnGJoJTl6-yDUEE_GQ.png "Figure 5")
+![Figure 5](images/generators_in_javascript-7.png "Figure 5")
 
 After another call is made to `gen.next()`, the state reverts back to execution and we see a similar picture as in figure 4. This goes on till the value passed to `result.done` is `True`, signaling that the generator has completed its execution.
 
