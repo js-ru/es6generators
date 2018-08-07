@@ -3,6 +3,7 @@
 ## Making Async code beautiful since ES6
 
 *Перевод статьи Yash Agrawal: [Generators in JavaScript](https://codeburst.io/generators-in-javascript-1a7f9f884439)*
+
 *Дата публикации: 16.08.2017*
 
 Generators are a cutting edge addition to ES6 JavaScript. Async code is harder to manage with JavaScript’s single threaded execution model and Generators and Promises are welcome inclusions in the JS arsenal. Let’s explore Generators in detail in this article.
