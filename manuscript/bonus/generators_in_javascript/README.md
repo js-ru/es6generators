@@ -1,20 +1,20 @@
-# Generators in JavaScript
+# Генераторы в JavaScript
 
-## Making Async code beautiful since ES6
+## Делаем асинхронный код красивым с ES6
 
 *Перевод статьи Yash Agrawal: [Generators in JavaScript](https://codeburst.io/generators-in-javascript-1a7f9f884439)*
 
 *Дата публикации: 16.08.2017*
 
-Generators are a cutting edge addition to ES6 JavaScript. Async code is harder to manage with JavaScript’s single threaded execution model and Generators and Promises are welcome inclusions in the JS arsenal. Let’s explore Generators in detail in this article.
+Генераторы — это передовая особенность в JavaScript ES6. При однопоточной модели выполнения в JavaScript сложно управлять асинхронным кодом, а генераторы и обещания (промисы) — долгожданные возможности в JS-арсенале. Давайте подробнее рассмотрим генераторы в этой статье.
 
-## Generators
+## Генераторы
 
-Generators are special types of functions in the sense that unlike a traditional function generators produce multiple values on a per request basis while suspending their execution between these requests. During the pre-ES6 era, objects written as [iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) served this purpose but the thing with those objects is that they are harder to maintain mostly because of the challenges in sustaining the internal state. Generators solve this problem by maintaining their own state.
+Генераторы представляют собой специальный тип функций. В отличие от традиционных функций генераторы производят несколько значений по запросу, приостанавливая своё выполнение между этими запросами. В эпоху до ES6 эту роль играли объекты, написанные как [итераторы](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators). Однако такие объекты сложнее поддерживать в основном из-за необходимости хранить внутреннее состояние.
 
-### How are generators implemented?
+### Как реализованы генераторы?
 
-Look at the code snippet from the official MDN documentation below to just see that it follows almost a similar syntax as a function but with some interesting differences.
+Взгляните на фрагмент кода ниже из официальной документации на MDN. Вы увидите, что синтаксис генераторов очень похож на синтаксис обычных функций, но имеет некоторые интересные отличия.
 
 ```js
 function* idMaker() {
@@ -31,24 +31,24 @@ console.log(gen.next().value); // 2
 // ...
 ```
 
-The `function*` and `yield` keywords are unique to a generator. Generators are defined by adding an `*` at the end of a function keyword. This enables us to use the `yield` keyword within the body of the generator to produce values on request. Let’s breakdown the snippet line by line.
+Ключевые слова `function*` и `yield` уникальны для генераторов. Генераторы определяются добавлением символа `*` в конце ключевого слова `function`. Это позволяет использовать ключевое слово `yield` в теле генератора для производства значений по запросу. Давайте разберём этот фрагмент строка за строкой.
 
-On **line 1**, we use the `function*` to create a generator. **Line 4** uses the yield keyword which produces a value on request. At **Line 7**, we call the generator function. Calling a generator function doesn’t execute it, instead it creates an iterator object which helps us interact with the generator. Follow the flowchart below to understand how it works.
+В **строке 1** мы используем `function*` для создания генератора. В **cтроке 4** используется ключевое слово `yield`, которое производит значение по запросу. В **строке 7** мы вызываем функцию-генератор. Вызов функции-генератора не выполняет её, а создаёт объект-итератор, которые помогает взаимодействовать с генератором. Посмотрите на схему ниже, чтобы понять, как это работает.
 
-![Flow of code snippet 1](images/generators_in_javascript-1.png "Flow of code snippet 1")
+![Поток фрагмента кода 1](images/generators_in_javascript-1.png "Поток фрагмента кода 1")
 
-NOTE : In the code chunk we used, it would never reach `gen.done = True` since it is inside an infinite loop.
+Обратите внимание: в фрагмент кода, который мы рассматривали, никогда не достигнет `gen.done = true`, поскольку имеет внутри бесконечный цикл.
 
-### Behind the Scenes — Generator’s inner workings
+### За сценой — как генераторы работают внутри
 
-The beginning of the article mentions how generators are ‘special’ functions in the sense that they can suspend their execution. A generator has the following states:
+В начале статьи упоминалось, что генераторы — это «специальные» функции в том смысле, что они могут останавливать своё выполнение. Генератор имеет следующие состояния:
 
-- Suspended Start
-- Executing
-- Suspended Yield
-- Completed
+- Приостановлен в начале (Suspended Start)
+- Выполняется (Executing)
+- Приостановлен на yield (Suspended Yield)
+- Завершён (Completed)
 
-Consider an easier code snippet to understand the states and execution context of the generator function.
+Рассмотрим более простой фрагмент кода, чтобы понять состояния и контекст выполнения функции-генератора.
 
 ```js
 function* myGenerator() {
@@ -66,38 +66,38 @@ const result3 = gen.next();
 // result3 = {value = undefined; done = true}
 ```
 
-**Line 1** declares a generator which has two `yield` statements in it. On **line 6**, an iterator object is created which executes the generator to the point of it’s first `yield` statement. After that, at **line 8**, **line 10** and **line 12**, generator is activated and a value is requested.
+**Строка 1** определяет генератор, который имеет два выражения `yield`. В **строке 6** создаётся объект-итератор. В **строке 8**, **строке 10** и **строке 12** генератор активируется и запрашивается значение.
 
-![Generator’s state](images/generators_in_javascript-2.png "Generator’s state")
+![Состояния генератора](images/generators_in_javascript-2.png "Состояния генератора")
 
-As soon as the iterator is created, generator goes into a suspended start state. After the first `gen.next()` the generator goes into execution mode and after finishing the `yield` request, suspends its execution. When it gets another `gen.next()` it executes and after being done with that request, it goes into a suspended yield. This cyclic process continues till we reach the return statement or till no more code is left to execute. At that point the generator goes into a completed state.
+Как только создаётся итератор, генератор переходит в состояние «Приостановлен на старте». После первого вызова `gen.next()` генератор переходит в режим выполнения, выполняется до первого выражения `yield`, после чего приостанавливается и переходит в состояние «Приостановлен на yield». Когда генератор получает следующий запрос `gen.next()`, он выполняется до следующего `yield`, и снова переходит в состояние «Приостановлен на yield». Этот процесс продолжается циклически, пока не встретится выражение `return` или пока не выполнится весь код. Тогда генератор переходит в состояние «Завершён».
 
-### Execution Context and Generators
+### Контекст выполнения и генераторы
 
-To better understand the inner workings of generators, we’ll have to analyze how it affects the execution context. Take another look at code snippet 2 because the execution context below would be drawn based on that.
+Чтобы лучше понять внутреннюю работу генераторов, мы должны проанализировать, как они влияют на контекст выполнения. Ещё раз посмотрим на фрагмент кода 2, потому что на его основе ниже будет рассмотрен контекст выполнения.
 
-Figure 1 is a snapshot of how the execution context and the lexical environments would look before **Line 6** in code snippet 2. If you need to read up on how execution contexts and lexical environments work, read my article on [variable hoisting](https://codeburst.io/hoisting-in-javascript-515c987336d3).
+На рисунке 1 показан снимок того, как выглядит контекст выполнения и лексическое окружение до выполнения **строки 6** сниппета 2. Если вам нужно почитать, как работает контекст выполнения и лексическое окружение, прочитайте мою статью о [подъёме переменных](https://codeburst.io/hoisting-in-javascript-515c987336d3).
 
-In Step 1, the global context executes and because of variable hoisting we have the 'result' variables and the `gen` object initialized to `undefined`.
+На шаге 1 выполняется глобальный контекст, из-за подъема переменных у нас есть переменные «result» и объект `gen`, инициализированный значением `undefined`.
 
-![Figure 1](images/generators_in_javascript-3.png "Figure 1")
+![Рисунок 1](images/generators_in_javascript-3.png "Рисунок 1")
 
-As **line 6** executes, an iterator object is created and the generator goes into a suspended start state. See Figure 2.
+Когда выполняется **строка 6**, создаётся объект-итератор, а генератор переходит в состояние «Приостановлен на старте». Смотрите рисунок 2.
 
-![Figure 2](images/generators_in_javascript-4.png "Figure 2")
+![Рисунок 2](images/generators_in_javascript-4.png "Рисунок 2")
 
-After **line 6**, the generator context is popped off the execution stack but isn’t discarded because `gen` keeps a reference to it. This is still at the point before any of the `yield` statements are executed. See Figure 3 and follow the dotted line in the environment to see how `myGeneration` is kept active despite of being popped off the stack.
+После **строки 6** контекст генератора выгружается из стека выполнения, но не выбрасывается, потому что `gen` сохраняет ссылку на него. Выполнение генератора остаётся в той же точке — до выполнения любых выражений `yield`. Смотрите рисунок 3 и следуйте за пунктирной линией, чтобы увидеть, как `myGeneration` поддерживается активным, несмотря на то, что он выскочил из стека.
 
-![Figure 3](images/generators_in_javascript-5.png "Figure 3")
+![Рисунок 3](images/generators_in_javascript-5.png "Рисунок 3")
 
-When the first call to `gen.next()` is made in the global execution context, unlike regular functions, generators reactivate the matching execution context. The `myGenerator()` context is placed on the top of the stack to continue its execution from the point it left off.
+Когда в первый раз вызывается `gen.next()` в глобальном контексте выполнения, генераторы, в отличие от обычных функций, повторно активируют соответствующий контекст выполнения. Контекст `myGenerator()` помещается в верхнюю часть стека, чтобы продолжить выполнение с того места, где он остановился.
 
-![Figure 4](images/generators_in_javascript-6.png "Figure 4")
+![Рисунок 4](images/generators_in_javascript-6.png "Рисунок 4")
 
-After it returns an object to return with the `value` property and the `done` property, it is again popped off the stack but not discarded since `gen` holds a reference to it. This time the generator goes into a suspended yield state and patiently waits till another request is made. Figure 5 shows a snapshot of how the context/environment look like at this stage.
+После того, как контекст `myGenerator()` вернёт объект со свойствами `value` и `done`, он снова выскочет из стека, но не выбросится, поскольку `gen` содержит ссылку на него. В это время генератор переходит в состояние «Приостановлен на yield» и терпеливо ждёт, пока не будет сделан следующий запрос. Рисунок 5 показывает снимок того, как выглядит контекст/окружение на этом этапе.
 
-![Figure 5](images/generators_in_javascript-7.png "Figure 5")
+![Рисунок 5](images/generators_in_javascript-7.png "Рисунок 5")
 
-After another call is made to `gen.next()`, the state reverts back to execution and we see a similar picture as in figure 4. This goes on till the value passed to `result.done` is `True`, signaling that the generator has completed its execution.
+После следующего вызова `gen.next()`, генератор снова переходит в состояние выполнения и мы видим картину, похожую на рисунок 4. Процесс повторяется до тех пор, пока значение `result.done` не станет равным `true`. Это сигнализирует о том, что генератор завершил своё выполнение.
 
-Hopefully that provides a little insight into what generators are and how they work in JavaScript.
+Надеюсь, это поможет вам понять, что такое генераторы и как они работают в JavaScript.
