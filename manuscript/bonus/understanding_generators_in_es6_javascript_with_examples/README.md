@@ -1,25 +1,26 @@
-# Понимание генераторов в JavaScript ES6 на примерах
+# Разбираемся с генераторами в JavaScript ES6 на примерах
 
 *Перевод статьи Arfat Salman: [Understanding Generators in ES6 JavaScript with Examples](https://codeburst.io/understanding-generators-in-es6-javascript-with-examples-6728834016d5)*
+
 *Дата публикации: 23.04.2018*
 
-ES6 introduced a new way of working with functions and iterators in the form of **Generators (or generator functions)**. A generator is a function that **can stop midway** and then continue *from where it stopped*. **In short, a generator *appears* to be a function but it behaves like an iterator**.
+В ES6 появился новый способ работать с функциями и итераторами в форме **генераторов (или функций-генераторов)**. Генератор — это функция, которая **может остановиться на полпути**, а затем продолжить выполнение с того места, где она остановилась. **Короче говоря, генератор выглядит как функция, но ведёт себя как итератор**.
 
-**Fun Fact:** `async/await` is based on generators. Read more [here](https://tc39.github.io/ecmascript-asyncawait/).
+**Любопытный факт**: `async/await` основаны на генераторах. Подробнее можно почитать [здесь](https://tc39.github.io/ecmascript-asyncawait/).
 
-Generators are intricately linked with iterators. If you don’t know about iterators, [here](https://codeburst.io/a-simple-guide-to-es6-iterators-in-javascript-with-examples-189d052c3d8e) is an article to better your understanding of them.
+Генераторы неразрывно связаны с итераторами. Если вы не знаете о них, [здесь](https://codeburst.io/a-simple-guide-to-es6-iterators-in-javascript-with-examples-189d052c3d8e) статья, которая поможет лучше их понять.
 
-Here’s a simple analogy to have an intuition for generators before we proceed with the technical details.
+Вот простая аналогия, которая даст вам интуитивное представление о генераторах, прежде чем мы перейдём к техническим деталям.
 
-Imagine you are reading a nail-biting techno-thriller. All engrossed in the pages of the book, you barely hear your doorbell ring. It’s the pizza delivery guy. You get up to open the door. **However, before doing that, you set a bookmark at the last page you read.** You mentally save the events of the plot. Then, you go and get your pizza. Once you return back to your room, you begin the book *from the page that you set the bookmark on*. You don’t begin it from the first page again. In a sense, you acted as a generator function.
+Представьте, что вы читаете захватывающий техно-триллер. Вы поглощены страницами книги и едва слышите звонок в дверь. Это парень из доставки пиццы. Вы встаёте, чтобы открыть дверь. **Но перед этим вы оставляете закладку на последней прочитанной странице.** Вы мысленно сохраняете события сюжета. А после этого вы пойдете и получите свою пиццу. Вернувшись в комнату, вы продолжите чтение *с той страницы, на которой оставили закладку*. Вы не начнёте снова с первой страницы. В некотором смысле вы действуете как функция-генератор.
 
-## Introduction
+## Введение
 
-Let’s see how we can utilise generators to solve some common problems while programming. But before that, let’s define what generators are.
+Давайте посмотрим, как мы можем использовать генераторы для решения некоторых распространенных проблем программирования. Но сначала определим, что такое генераторы.
 
-### What are Generators?
+### Что такое генераторы?
 
-A normal function such as this one cannot be stopped *before* it finishes its task i.e its last line is executed. It follows something called [run-to-completion](https://en.wikipedia.org/wiki/Run_to_completion_scheduling) model.
+Обычную функцию, такую как эта, нельзя остановить *до того*, как она завершит свою задачу, то есть пока её последняя строка не будет выполнена. Такая модель называется ][run-to-completion](https://en.wikipedia.org/wiki/Run_to_completion_scheduling) (выполняйся-до-завершения).
 
 ```js
 function normalFunc() {
@@ -30,15 +31,16 @@ function normalFunc() {
 }
 ```
 
-The only way to exit the `normalFunc` is by `return`ing from it, or `throw`ing an error. If you call the function again, it will begin the execution from the top **again**.
+Единственные способы выйти из `normalFunc`: вернуть значение с помощью `return` или выбросить ошибку. Если вы вызовёте функцию снова, она начнёт выполняться **сначала**.
 
-In contrast, a generator is a function that **can stop midway** and then continue *from where it stopped*.
+В противоположность этому, генератор — это функция, которая может **остановиться на полпути** и продолжить выполнение *с того места, где она была остановлена*.
 
-Here are some other common definitions of generators —
+Вот некоторые другие определения генераторов —
 
-- Generators are a special class of functions that simplify the task of writing iterators.
-A generator is a function that produces a sequence of results instead of a single value, i.e you *generate* ​a series of values.
-- In JavaScript, a generator is a function which returns an object on which you can call `next()`. Every invocation of `next()` will return an object of shape —
+- Генераторы — это специальный класс функций, которые упрощают задачу написания итераторов. 
+- Генератор — это функция, которая производит последовательность результатов вместо одного значения, т.е. *генерирует* серию значений.
+
+В JavaScript генератор — это функция, возвращающая объект, у которого вы можете вызвать метод `next()`. Каждый вызов `next()` будет возвращать объект такого вида — 
 
 ```js
 { 
@@ -47,73 +49,73 @@ A generator is a function that produces a sequence of results instead of a singl
 } 
 ```
 
-The `value` property will contain the value. The `done` property is either `true` or `false`. When the `done` becomes `true`, the generator stops and won’t generate any more values.
+Свойство `value` будет содержать значение. Свойство `done` может принимать значение `true` или `false`. Когда свойство `done` становится равным `true`, генератор останавливается и не генерирует больше никаких значений.
 
-Here’s an illustration of the same —
+Вот иллюстрация этого процесса — 
 
-![Normal Functions vs Generators](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Normal Functions vs Generators")
+![Обычные функции против генераторов](images/understanding_generators_in_es6_javascript_with_examples-1.png "Обычные функции против генераторов")
 
-Note the dashed arrow that closes the **yield-resume-yield** loop just before **Finish** in *Generators* part of the image. **There is a possibility that a generator may never finish.** We’ll see an example later.
+Обратите внимание на пунктирную стрелку, которая замыкает цикл **yield-resume-yield** перед **Finish**. **Это возможность создавать бесконечные генераторы.** Мы рассмотрим примеры позже.
 
-### Creating a Generator
+### Создание генератора
 
-Let’s see how we can create a generator in JavaScript —
+Посмотрим, как мы может создать генератор в JavaScript — 
 
-```js
-function * generatorFunction() { // Line 1
-  console.log('This will be executed first.');
-  yield 'Hello, ';   // Line 2
+<pre>
+<b>function *</b> generatorFunction() { // Строка 1
+  console.log('Эта строка будет выполнена первой.');
+  <b>yield</b> 'Привет, ';   // Строка 2
 
-  console.log('I will be printed after the pause');  
-  yield 'World!';
+  console.log('Я буду напечатана после паузы.');  
+  <b>yield</b> 'Мир!';
 }
 
-const generatorObject = generatorFunction(); // Line 3
+const <b>generatorObject</b> = generatorFunction(); // Строка 3
 
-console.log(generatorObject.next().value); // Line 4
-console.log(generatorObject.next().value); // Line 5
-console.log(generatorObject.next().value); // Line 6
+console.log(<b>generatorObject.next()</b>.value); // Строка 4
+console.log(<b>generatorObject.next()</b>.value); // Строка 5
+console.log(<b>generatorObject.next()</b>.value); // Строка 6
 
-// This will be executed first.
-// Hello, 
-// I will be printed after the pause
-// World!
+// Эта строка будет выполнена первой.
+// Привет, 
+// Я буду напечатана после паузы.
+// Мир!
 // undefined
-```
+</pre>
 
-Focus on the bold parts. For creating a generator function, we use `function *` syntax instead of just `function`. Any number of spaces can exist between the `function` keyword, the `*`, and the function name. Since it is just a function, you can use it anywhere that a function can be used i.e inside objects, and class methods.
+Обратите внимание на участки, выделенные жирным. Для создания функции-генератора мы используем синтаксис `function *` вместо просто `function`. Между ключевым словом `function`, звёздочкой `*` и именем функции может быть любое количество пробелов. Поскольку это просто функция, вы можете использовать её везде, где может использоваться функция, например, внутри объектов или в качестве методов класса.
 
-Inside the function body, we don’t have a `return`. Instead, we have another keyword `yield` (Line 2). It’s an operator with which a generator can pause itself. Every time a generator encounters a `yield`, it “returns” the value specified after it. In this case, `Hello, ` is returned. However, we don’t say “returned” in the context of generators. We say the “the generator has **yielded** `Hello, `”.
+В теле функции в примере нет `return`. Вместо этого мы используем другое ключевое слово — `yield` (Строка 2). Это оператор, с помощью которого генератор может останавливать сам себя. Каждый раз, когда генератор встречает `yield`, он “возвращает” значение, определённое после `yield`. В нашем примере возвращается `Привет, `. Однако в контексте генераторов мы не говорим “вернул”. Мы говорим “генератор **отдал** `Привет, `”.
 
-We can also return from a generator. However, `return` sets the `done` property to `true` after which the generator cannot generate any more values.
+Мы также можем вернуть значение из генератора. Однако `return` устанавливает свойство `done` в true, после чего генератор больше не может генерировать значения.
 
 ```js
 function *  generatorFunc() {
   yield 'a';
-  return 'b'; // Generator ends here.
-  yield 'a'; // Will never be executed. 
+  return 'b'; // Генератор завершается здесь.
+  yield 'a';  // Никогда не будет выполнена. 
 }
 ```
 
-In Line 3, we create the generator object. **It seems like we are invoking** the function `generatorFunction`. Indeed we are! The difference is that instead of returning any value, a generator function *always* returns a generator object. The generator object is an iterator. So you can use it in `for-of` loops or other functions accepting an iterable.
+В строке 3 мы создаём объект-генератор. **Выглядит так, как будто мы вызываем** функцию `generatorFunction`. Так и есть! Разница в том, что вместо любого значения функция-генератор *всегда* возвращает объект-генератор. Объект-генератор — это итератор. Так что вы можете использовать его в цикле `for-of` или в других конструкциях, работающих с итераторами.
 
-In Line 4, we call the `next()` method on the `generatorObject`. With this call, the generator begins executing. First, it `console.log` the `This will be executed first`. Then, it encounters a `yield ‘Hello, ‘`. The generator yields the value as an object `{ value: 'Hello, ', done: false }` and suspends/pauses. Now, it is waiting for the next invocation.
+В строке 4 мы вызываем метод `next()` у объекта `generatorObject`. После этого вызова начинается выполнение генератора. Во-первых, `console.log` выводит строку `Эта строка будет выполнена первой.`. Затем встречается `yield 'Привет, '`. Генератор отдаёт значение в виде объекта `{ value: 'Привет, ', done: false }` и засыпает/приостанавливается. Теперь он ждёт следующий вызов.
 
-In Line 5, we call `next()` again. This time the generator wakes up and begin executing from where it left. The next line it finds is a `console.log`. It logs the string `I will be printed after the pause`. Another `yield` is encountered. The value is yielded as the object `{ value: 'World!', done: false }`. We extract the `value` property and log it. The generator sleeps again.
+В строке 5 мы снова вызываем `next()`. В этот момент генератор просыпается и начинает выполнение с того момента, где он остановился. На следующей строке он находит `console.log` и выводит строку `Я буду напечатана после паузы.`. Встречается другой `yield`. Генератор отдаёт значение в виде объекта `{ value: 'Мир!', done: false }`. Мы извлекаем значение и выводим его в консоль. Генератор снова засыпает.
 
-In Line 6, we again invoke `next()`. This time there are no more lines to execute. Remember that every function implicitly returns `undefined` if no return statement is provided. Hence, the generator returns (instead of yielding) an object `{ value: undefined, done: true}`. The done is set to `true`. This signals the end of this generator. Now, it can’t generate more values or resume again since there are no more statements to be executed.
+В строке 6 мы снова вызываем `next()`. На этот момент больше не осталось строк для выполнения. Напомню, что каждая функция неявно возвращает `undefined`, если в ней нет выражения `return`. Соответственно, генератор возвращает (а не отдаёт) объект `{ value: undefined, done: true}`. Свойство `done` установлено в `true`. Это сигнализирует о конце генератора. Теперь он больше не может генерировать значения или возобновиться, т.к. не осталось выражений для выполнения.
 
-We’ll need to make new another generator object to run the generator again.
+Нам нужно создать новый объект-генератор, что снова запустить генератор.
 
-## Uses of Generators
+## Использование генераторов
 
-There are many awesome use cases of generators. Let’s see a few of them.
+Есть много крутых вариантов использования генераторов. Давайте рассмотрим некоторые из них.
 
-### Implementing Iterables
+### Реализация итерируемых объектов
 
-When you implement an iterator, you have to manually make an iterator object with a `next()` method. Also, you have to manually save the state. Often times, it becomes really hard to do that. Since generators are also iterables, they can be used to implement iterables without the extra boilerplate code. Let’s see a simple example.
+Когда вы реализуете итератор, вам нужно вручную создать объект-итератор с методом `next()`. Также вы должны вручную сохранить состояние. Часто это бывает сложно сделать. Поскольку генераторы — это также итераторы, они могут использоваться для реализации итерируемых объектов без дополнительного кода. Давайте рассмотрим простой пример.
 
-*Problem: We want to make a custom iterable that returns `This `, `is `, and `iterable.`. Here’s one implementation using iterators —*
+*Проблема: Мы хотим создать собственный итерируемый объект, который будет возвращать `Это `, `итерируемый ` и `объект.`. Вот одна реализация с помощью итераторов —*
 
 ```js
 const iterableObj = {
@@ -123,11 +125,11 @@ const iterableObj = {
       next() {
         step++;
         if (step === 1) {
-          return { value: 'This', done: false};
+          return { value: 'Это ', done: false};
         } else if (step === 2) {
-          return { value: 'is', done: false};
+          return { value: 'итерируемый ', done: false};
         } else if (step === 3) {
-          return { value: 'iterable.', done: false};
+          return { value: 'объект.', done: false};
         }
         return { value: '', done: true };
       }
@@ -139,39 +141,39 @@ for (const val of iterableObj) {
   console.log(val);
 }
 
-// This
-// is 
-// iterable.
+// Это
+// итерируемый 
+// объект.
 ```
 
-Here’s the same thing using generators —
+А вот так же самая вещь с использованием генераторов — 
 
 ```js
 function * iterableObj() {
-  yield 'This';
-  yield 'is';
-  yield 'iterable.'
+  yield 'Это ';
+  yield 'итерируемый ';
+  yield 'объект.'
 }
 
 for (const val of iterableObj()) {
   console.log(val);
 }
 
-// This
-// is 
-// iterable.
+// Это
+// итерируемый 
+// объект.
 ```
 
-You can compare both the versions. It’s true that this is some what of a contrived example. But it does illustrate the points —
+Вы можете сравнить обе версии. Да, это надуманный пример. Но он иллюстрирует следующее —
 
-- We don’t have to worry about `Symbol.iterator`
-- We don have to implement `next()`.
-- We don’t have to manually make the return object of `next()` i.e `{ value: 'This', done: false }`.
-- We don’t have to save the state. In the iterator’s example, the state was saved in the variable `step`. It’s value defined what was output from the iterable. We had to do nothing of this sort in the generator.
+- Нам не нужно беспокоиться о `Symbol.iterator`.
+- Нам не нужно реализовывать метод `next()`.
+- Нам не нужно вручную создавать объект, который вернёт метод `next()`, т.е. `{ value: 'Это ', done: false }`.
+- Нам не нужно сохранять состояние. В примере с итератором состояние сохраняется в переменную `step`. От значения этой переменной зависит значение, которое отдаётся итератором. В случае с генератором нам не нужно делать ничего из этого.
 
-### Better Async functionality
+### Улучшенная асинхронная функциональность
 
-Code using promises and callbacks such as —
+Код, использующий промисы и функции обратного вызова, такой как — 
 
 ```js
 function fetchJson(url) {
@@ -186,7 +188,7 @@ function fetchJson(url) {
 }
 ```
 
-can be written as (with the help of libraries such as [co.js](https://github.com/tj/co)) —
+можно переписать так (с помощью библиотеки, такой как [co.js](https://github.com/tj/co)) — 
 
 ```js
 const fetchJson = co.wrap(function * (url) {
@@ -201,11 +203,11 @@ const fetchJson = co.wrap(function * (url) {
 });
 ```
 
-Some readers may have noticed that it parallels the use of `async/await`. That’s not a co-incidence. `async/await` follows a similar strategy and replaces the yield with `await` in cases where promises are involved. It is based on generators.
+Некоторые читатели возможно заметили сходство с использованием `async/await`. Это не совпадение. Асинхронные функции (`async/await`) используют похожую стратегию и заменяют `yield` на `await`, если речь идёт о промисах. Они основаны на генераторах.
 
-### Infinite Data Streams
+### Бесконечные потоки данных
 
-It’s possible to create generators that never end. Consider this example —
+Возможно создавать генераторы, которые никогда не заканчиваются. Рассмотрим этот пример —
 
 ```js
 function * naturalNumbers() {
@@ -225,16 +227,17 @@ console.log(numbers.next().value)
 // 2
 ```
 
-We make a generator `naturalNumbers`. Inside the function, we have an infinite `while` loop. In that loop, we `yield` the `num`. When the generator yields, it is suspended. When we call `next()` again, the generator wakes up, continues from where it was suspended (in this case `yield num`) and executes till another `yield` is encountered or the generator finishes. Since the next statement is `num = num + 1`, it updates `num`. Then, it goes to the top of while loop. The condition is still true. It encounter the next line `yield num`. It yields the updated `num` and suspends. This continues as long you want.
+Мы создали генератор `naturalNumbers`. Внутри функции у нас есть бесконечный цикл `while`. В этом цикле мы отдаём значение `num`. Когда генератор отдаёт значение, он засыпает. Когда мы снова вызываем метод `next()`, генератор просыпается, продолжает выполнение с того момента, где он был остановлен (в данном случае `yield num`) и выполняется до тех пор, пока не встретится следующее `yield` или пока генератор не будет завершён. Поскольку следующее выражение — `num = num + 1`, оно обновляет значение `num`. Затем выполнение переходит к началу цикла. Условие равно `true`. Встречается следующая строка `yield num`. Генератор отдаёт значение и засыпает. Это может продолжаться столько, сколько хотите.
 
-### Generators as observers
-Generators can also receive values using the `next(val)` function. Then the generator is called an observer since it wakes up when it receives new values. In a sense, it keeps *observing* for values and acts when it gets one. You can read more about this pattern [here](http://exploringjs.com/es6/ch_generators.html#sec_generators-as-observers).
+### Генераторы как наблюдатели
 
-## Advantages of Generators
+Генераторы также могут получать значения с помощью метода `next(val)`. В этом случае генератор называют наблюдателем, так как он просыпается, когда получает новые значения. В некотором смысле, он продолжает наблюдать за значениями и выполняет действия, когда получает их. [Здесь](http://exploringjs.com/es6/ch_generators.html#sec_generators-as-observers) вы можете узнать больше об этом шаблоне.
 
-### Lazy Evaluation
+## Преимущества генераторов
 
-As seen with **Infinite Data Streams** example, it is possible only because of lazy evaluation. Lazy Evaluation is an evaluation model which delays the evaluation of an expression until its value is needed. That is, if we don’t need the value, it won’t exist. It is **calculated** as we demand it. Let’s see an example —
+### Ленивое выполнение
+
+Как видно из примера **Бесконечные потоки данных**, он возможен только благодаря ленивому выполнению. Ленивое выполнение (Lazy Evaluation) — это модель, которая задерживает выполнение выражения до тех пор, пока не понадобится его значение. То есть, если нам не нужно значение, оно не существует. Оно вычисляется по мере необходимости. Давайте посмотрим пример —
 
 ```js
 function * powerSeries(number, power) {
@@ -246,13 +249,13 @@ function * powerSeries(number, power) {
 }
 ```
 
-The `powerSeries` gives the series of the number raised to a power. For example, power series of 3 raised to 2 would be **9(3²) 16(4²) 25(5²) 36(6²) 49(7²)**. When we do `const powersOf2 = powerSeries(3, 2);` we just create the generator object. None of the values has been computed. Now, if we call `next()`, 9 would be computed and retuned.
+Генератор `powerSeries` отдаёт ряд чисел, возведённых в степень. Например, степенной ряд с базой 3 и степенью 2 — **9(3²) 16(4²) 25(5²) 36(6²) 49(7²)**. Когда мы делаем `const powersOf2 = powerSeries(3, 2);`, мы просто создаём объект-генератор. Ни одно значение не вычисляется. А если мы вызовем `next()`, значение 9 вычислится и вернётся.
 
-### Memory Efficient
+### Эффективность по памяти
 
-A direct consequence of Lazy Evaluation is that generators are memory efficient. We generate only the values that are needed. With normal functions, we needed to pre-generate all the values and keep them around in case we use them later. However, with generators, we can defer the computation till we need it.
+Прямое следствие ленивого выполнения — генераторы эффективны по памяти. Мы генерируем только одно необходимое значение. В обычных функциях нам нужно генерировать все значения и хранить их на случай, если они понадобятся позже. Но с генераторами мы можем отложить вычисление, пока оно не потребуется.
 
-We can create combinator functions to act on generators. Combinators are functions that combine existing iterables to create new ones. One such combinator is `take`. It takes first `n` elements of an iterable. Here’s one implementation —
+Мы можем создавать функции-комбинаторы для работы с генераторами. Комбинаторы — это функции, которые объединяют существующие итерируемые объекты для создания новых. Один из таких комбинаторов — `take`. Он берет первые `n` элементов итерируемой последовательности. Вот пример реализации — 
 
 ```js
 function * take(n, iter) {
@@ -267,7 +270,7 @@ function * take(n, iter) {
 }
 ```
 
-Here’s some interesting use cases of `take` —
+А вот некоторые интересные варианты использования `take` —
 
 ```js
 take(3, ['a', 'b', 'c', 'd', 'e'])
@@ -283,7 +286,7 @@ take(5, powerSeries(3, 2));
 // 9 16 25 36 49
 ```
 
-Here’s an implementation of [cycled](https://github.com/sindresorhus/cycled) library (without the reversing functionality).
+Здесь показана реализация библиотеки [cycled](https://github.com/sindresorhus/cycled) (без функциональности вывода в обратном порядке).
 
 ```js
 function * cycled(iter) {
@@ -300,31 +303,31 @@ console.log(...take(10, cycled(take(3, naturalNumbers()))))
 // 1 2 3 1 2 3 1 2 3 1
 ```
 
-### Caveats
+### Предостережения
 
-There are some points that you should remember while programming using generators.
+Есть некоторые моменты, о которых вы должны помнить при работе с генераторами.
 
-- **Generators are one-time access only.** Once you’ve exhausted all the values, you can’t iterate over it again. To generate the values again, you need to make a new generator object.
+- **Генераторы — это разовый доступ.** Если вы перебрали все значения, вы не сможете получить их снова. Чтобы снова генерировать значения, необходимо создать новый объект-генератор.
 
-```js
+<pre>
 const numbers = naturalNumbers();
 
 console.log(...take(10, numbers)) // 1 2 3 4 5 6 7 8 9 10
-**console.log(...take(10, numbers))** // This will not give any data
-```
+<b>console.log(...take(10, numbers))</b> // Это не даст никаких данных
+</pre>
 
-Generators do not allow random access as possible with arrays. Since the values are generated one by one, accessing a random value would lead to computation of values till that element. Hence, it’s not random access.
+- Генераторы не предоставляют случайный доступ к элементам как в массиве. Поскольку значения генерируются одно за другим, для доступа к случайному значению нужно вычислить все значения до этого элемента. Следовательно, это не случайный доступ.
 
-## Conclusion
+## Заключение
 
-A lot of things are yet to be covered in generators. Things such as `yield *`, `return()` and `throw()`. Generators also make [coroutines](https://en.wikipedia.org/wiki/Coroutine) possible. I’ve listed some references that you can read to gain further understanding of generators.
+Ещё многое можно рассмотреть в теме генераторов, например, `yield *`, `return()` и `throw()`. Генераторы также позволяют реализовывать [сопрограммы](https://ru.wikipedia.org/wiki/%D0%A1%D0%BE%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0). Я перечислил несколько ссылок, по которым вы можете получить дополнительную информацию.
 
-You can head over to Python’s [itertools](https://docs.python.org/2/library/itertools.html#itertools.chain) page, and see some of the utilities that allow working with iterators and generators. As an exercise, you can implement the utilities yourself.
+Вы можете перейти на страницу модуля [itertools](https://docs.python.org/2/library/itertools.html#itertools.chain) для Python и посмотреть некоторые из утилит, которые позволяют работать с итераторами и генераторами. В качестве упражнения вы можете реализовать утилиты самостоятельно.
 
-###References —
+### Ссылки
 
-- [PEP 255](https://www.python.org/dev/peps/pep-0255/) — It’s the proposal for generators in Python. But the rationale is applicable to JavaScript as well.
+- [PEP 255](https://www.python.org/dev/peps/pep-0255/) — Предложение для генераторов в Python. Но обоснование применимо и к JavaScript.
 - [Mozilla Docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators)
-- An in-depth four-part series by [Kyle Simpson](https://medium.com/@getify) on generators and co-routines. Read [here](https://davidwalsh.name/es6-generators).
-- An in-depth review of generators by [Axel Rauschmayer](https://medium.com/@rauschma). Read it [here](http://exploringjs.com/es6/ch_generators.html).
-- [Python’s itertools](https://docs.python.org/2/library/itertools.html#itertools.chain) — It’s an builtin library in Python that has lots of utilities for working with generators and iterators.
+- Углубленная серия из четырех частей [Кайла Симпсона](https://medium.com/@getify) о генераторах и сопрограммах. Можно прочитать [здесь](https://davidwalsh.name/es6-generators).
+- Углубленный обзор генераторов от [Акселя Раушмайера](https://medium.com/@rauschma). Можно прочитать [здесь](http://exploringjs.com/es6/ch_generators.html).
+- [Модуль itertools для Python](https://docs.python.org/2/library/itertools.html#itertools.chain) — Встроенная в Python библиотека, которая содержит множество утилит для работы с генераторами и итераторами.
