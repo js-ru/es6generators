@@ -36,3 +36,4 @@ bonus/generators_work/README.md
 bonus/es6_generators_basic/README.md
 bonus/es6_generators_dive/README.md
 bonus/async_generators/README.md
+bonus/concurrent_generators/README.md
