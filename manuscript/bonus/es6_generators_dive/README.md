@@ -4,6 +4,13 @@
 
 *Дата публикации: 27.07.2014*
 
+## ES6 Generators: Complete Series
+
+1. [The Basics Of ES6 Generators](bonus/es6_generators_basic/README.md)
+2. [Diving Deeper With ES6 Generators](bonus/es6_generators_dive/README.md)
+3. [Going Async With ES6 Generators](bonus/async_generators/README.md)
+4. [Getting Concurrent With ES6 Generators](bonus/concurrent_generators/README.md)
+
 If you're still unfamiliar with ES6 generators, first go read and play around with the code in "[Part 1: The Basics Of ES6 Generators](bonus/es6_generators_basic/README.md)". Once you think you've got the basics down, now we can dive into some of the deeper details.
 
 ## Error Handling
