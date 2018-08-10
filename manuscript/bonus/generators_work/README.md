@@ -70,7 +70,7 @@ console.log(iterator.next());     // { value: 0.8244022422935814, done: false }
 ```js
 console.log(iterator.next());     // { value: 0.4900301224552095, done: false }
 
-// send a value to set `newMax`, which will persist for future calls to `.next()`:
+// отправляется значение `newMax`, которое сохранится для будущих вызовов `.next()`:
 console.log(iterator.next(1000)); // { value: 963.7744706124067, done: false }
 console.log(iterator.next());     // { value: 714.516609441489, done: false }
 ```
