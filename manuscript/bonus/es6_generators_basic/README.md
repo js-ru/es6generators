@@ -4,6 +4,13 @@
 
 *Дата публикации: 21.07.2014*
 
+## ES6 Generators: Complete Series
+
+1. [The Basics Of ES6 Generators](bonus/es6_generators_basic/README.md)
+2. [Diving Deeper With ES6 Generators](bonus/es6_generators_dive/README.md)
+3. [Going Async With ES6 Generators](bonus/async_generators/README.md)
+4. [Getting Concurrent With ES6 Generators](bonus/concurrent_generators/README.md)
+
 One of the most exciting new features coming in JavaScript ES6 is a new breed of function, called a **generator**. The name is a little strange, but the behavior may seem *a lot stranger* at first glance. This article aims to explain the basics of how they work, and build you up to understanding why they are so powerful for the future of JS.
 
 ## Run-To-Completion
