@@ -1,43 +1,43 @@
-# ES6 Generators: How do They Work?
+# Генераторы ES6: как они работают?
 
 *Перевод статьи Josh Johnston: [ES6 Generators: How do They Work?](https://x-team.com/blog/generators-work/)*
 
 *Дата публикации: 28.04.2015*
 
-It can be tricky to write software that produces the correct result. But we all know that this only marks the line where the real challenge begins. Finding a good way to model the solution can make the difference between something that “makes sense” and is a joy to work with, versus something that ends up wrapped in comments like this:
+Написать программное обеспечение, которое даёт правильный результат, может быть сложно. Но мы все знаем, что это только начало настоящих испытаний. От того, насколько правильный способ выбран для решения той или иной задачи, зависит, будет ли работа “иметь смысл” и приносить удовольствие или закончится чем-то подобным в комментарии:
 
 ```js
 //
-// Dear maintainer:
+// Дорогой мейнтейнер:
 //
-// Once you are done trying to 'optimize' this routine,
-// and have realized what a terrible mistake that was,
-// please increment the following counter as a warning
-// to the next guy:
+// Когда ты закончишь попытки 'оптимизировать' эту рутину,
+// и осознаешь, какая это была ужасная ошибка,
+// пожалуйста, увеличь следующий счетчик в качестве предупреждения
+// для следующего парня:
 //
 // total_hours_wasted_here = 42
 //
 ```
 
-(source: [http://stackoverflow.com/questions/184618/what-is-the-best-comment-in-source-code-you-have-ever-encountered/482129#482129](http://stackoverflow.com/questions/184618/what-is-the-best-comment-in-source-code-you-have-ever-encountered/482129#482129))
+(источник: [http://stackoverflow.com/questions/184618/what-is-the-best-comment-in-source-code-you-have-ever-encountered/482129#482129](http://stackoverflow.com/questions/184618/what-is-the-best-comment-in-source-code-you-have-ever-encountered/482129#482129))
 
-Today we’ll be looking at how [ES6 Generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) work under the hood, in order to understand better how we can use them to solve old problems in new ways.
+Сегодня мы рассмотрим, как работают [генераторы ES6](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) под капотом, чтобы лучше понять, как мы можем использовать их для решения старых проблем по-новому.
 
-## Do not block
+## Не блокируй
 
-You might have heard of the importance of writing “non-blocking” javascript. When we do an I/O operation, like make an HTTP request or write to a database, we generally want to use something like callbacks or promises. Performing a “blocking” operation would cause the entire program to freeze, which in most cases is not a viable option. Imagine if all of your users had to sit and wait any time someone else wanted to interact with the system.
+Возможно, вы слышали о важности написания «неблокирующего» JavaScript. Когда мы выполняем операцию ввода-вывода, например, делаем HTTP-запрос или пишем в базу данных, мы обычно хотим использовать что-то вроде функций обратного вызова или обещаний (промисов). Выполнение «блокирующей» операции может привести к тому, что всё приложение будет заморожено, а это в большинстве случаев неприемлемо. Представьте, что все ваши пользователи будут сидеть и ждать каждый раз, когда кто-то другой взаимодействует с системой.
 
-Another consequence of this is that if a javascript program ever enters an infinite loop you’re pretty much cooked. Running `node -e 'while(true) {}'` will possibly freeze your computer and require a system reboot. Maybe don’t try that one at home ( ⚆ _ ⚆ )
+Другое следствие этого: если JavaScript-программа когда-нибудь входит в бесконечный цикл, всё замирает. Запуск `node -e 'while(true) {}`, возможно, заморозит ваш компьютер и потребует перезагрузки. Возможно, не пробуйте этого дома (⚆ _ ⚆).
 
-With all of this in mind, it’s curious to hear that ES6 Generators allow us to effectively “pause” execution in the middle of a function and resume it at some time in the future. There are also many examples of generators flaunting their infinite loops in a casual“*just looping infinitely, NBD*” kind of manner. At first glance you might think that a significant overhaul of the platform would be required in order to allow these previously deal-breaking behaviours. Yet with tools like [Regenerator](https://facebook.github.io/regenerator/) and [Babel](https://babeljs.io/) this functionality is readily available for us in plain old ES5. Did you ever wonder what kind of arcane rituals are enacted to make this possible? Today we will find out. Hopefully we’ll also come away with a deeper understanding of how generators work and how to make the most of them.
+Учитывая всё это, любопытно слышать, что генераторы ES6 позволяют нам эффективно «приостанавливать» выполнение в середине функции и возобновлять её в будущем. Существует также множество примеров генераторов, щеголяющих своими бесконечными циклами в непринуждённой манере «просто бесконечный цикл, подумаешь». На первый взгляд можно подумать подумать, что для реализации такого поведения потребуется существенная перестройка платформы. Однако с такими инструментами, как [Regenerator](https://facebook.github.io/regenerator/) и [Babel](https://babeljs.io/), эта функциональность легко доступна для нас в простом старом ES5. Вы когда-нибудь задумывались о том, какие древние ритуалы делают это возможным? Сегодня мы это выясним. Надеюсь, мы также уйдем с более глубоким пониманием того, как работают генераторы и как их использовать максимально эффективно.
 
-Before we begin: if you’re new to generators I recommend the [nodeschool workshop](http://nodeschool.io/#workshoppers) for an awesome hands-on tutorial that will guide you through the basics. Just `npm install -g learn-generators` and then run the `learn-generators` command. You can also [grab it from github](https://github.com/isRuslan/learn-generators):
+Прежде, чем мы начнём: если вы новичок в генераторах, я рекомендую [воркшоп на nodeschool](http://nodeschool.io/#workshoppers) в качестве прекрасного практического учебника, который поможет вам разобраться в общих чертах. Просто выполните команду `npm install -g learn-generators` и затем запустите с помощью `learn-generators`. Также вы можете [скачать его с GitHub](https://github.com/isRuslan/learn-generators):
 
 ![Learn Generators](images/generators_work.webp "Learn Generators")
 
-## A Lazy Sequence
+## Ленивая последовательность
 
-Let’s start with a simple example. Imagine you need to do something with a sequence of values. You might model it as an array and operate on the values that way. But what if the sequence is of infinite length? Arrays won’t do here. We could instead model it as a generator function:
+Давайте начнём с простого примера. Представьте, что вам нужно что-то сделать с последовательностью значений. Вы можете реализовать её в виде массива и управлять этими значениями. Но что, если эта последовательность бесконечной длины? Массивы здесь не подойдут. Вместо этого мы можем реализовать последовательность в виде функции-генератора:
 
 ```js
 function* generateRandoms (max) {
@@ -52,11 +52,11 @@ function* generateRandoms (max) {
 }
 ```
 
-Note the `function*` part, which indicates this is a special “generator function” and will behave differently to an ordinary `function`. Another important part is the `yield` keyword on line 5. Ordinary functions can only send back results when they end with a `return`. Generator functions send back results whenever they `yield`.
+Обратите внимание на ключевое слово `function*`, которое показывает, что это специальная «функция-генератор» и она будет вести себя отлично от обычной функции. Другая важная часть — ключевое слово `yield` в строке 5. Обычные функции могут вернуть значение только с помощью `return`, при этом выполнение функции завершается. Функции-генераторы могут отдавать значения когда угодно с помощью `yield`.
 
-We can read the intent of this function as "*Every time you are asked for the next value, give a random number between 0 and max. Keep doing this until the program is exited or until all human technology is destroyed in the great solar flare of 2065. Whichever comes first*".
+Мы можем интерпретировать эту функцию так: «*Каждый раз, когда у тебя спрашивают новое значение, отдавай случайное число от 0 до max. Продолжай делать это, пока программа не завершится или пока все человеческие технологии не будут уничтожены великой солнечной вспышкой в 2065. Смотря, что наступит раньше*».
 
-As the summary suggests, we only get values from a generator when we ask for them. This is important because otherwise an infinite sequence like this could quickly flood all available memory. We ask for values using an iterator, which is what we get when we call the generator function:
+Мы получаем значения от генератора, только когда запрашиваем их. Это важно, потому что в противном случае бесконечная последовательность может быстро заполнить всю доступную память. Мы запрашиваем значения с помощью итератора, который получаем, когда вызываем функцию-генератор:
 
 ```js
 var iterator = generateRandoms();
@@ -65,7 +65,7 @@ console.log(iterator.next());     // { value: 0.4900301224552095, done: false }
 console.log(iterator.next());     // { value: 0.8244022422935814, done: false }
 ```
 
-Generators also allow two-way communication, like in line 5: `let newMax = yield Math.random() * max`. As we’ll see later, generators go into a “suspended” state whenever they’re not being used, and wake up when an iterator asks for the next value. So when we call `iterator.next` and pass in a value as an argument, that value effectively replaces the `yield Math.random() * max` part, and sets the value of `newMax`. You can see it in action here:
+Генераторы также позволяют двустороннюю коммуникацию как в строке 5: `let newMax = yield Math.random() * max`. Как мы увидим позже, генераторы переходят в режим «приостановлен», когда не используются, и просыпаются, когда итератор запрашивает следующее значение. Поэтому когда мы вызываем `iterator.next` и передаём значение в качестве аргумента, это значение заменяет выражение `yield Math.random() * max` и устанавливается в качестве значения `newMax`. Вы можете видеть это в действии здесь:
 
 ```js
 console.log(iterator.next());     // { value: 0.4900301224552095, done: false }
@@ -75,9 +75,9 @@ console.log(iterator.next(1000)); // { value: 963.7744706124067, done: false }
 console.log(iterator.next());     // { value: 714.516609441489, done: false }
 ```
 
-## Generators in ES5
+## Генераторы в ES5
 
-To understand more about how generators work it’s helpful to see how they translate into ES5. You can try this for yourself by installing babel and then viewing the source it produces.
+Чтобы узнать больше о том, как работают генераторы, полезно посмотреть, как они транслируются в ES5. Вы можете попробовать сами, установив babel и просмотрев исходный код, который он генерирует.
 
 ```bash
 npm install -g babel
@@ -85,7 +85,7 @@ npm install -g babel
 babel generate-randoms.js
 ```
 
-Here’s what we get when we run that transformation:
+Вот что мы получаем, когда мы запускаем это преобразование:
 
 ```js
 var generateRandoms = regeneratorRuntime.mark(function generateRandoms(max) {
@@ -117,21 +117,21 @@ var generateRandoms = regeneratorRuntime.mark(function generateRandoms(max) {
 });
 ```
 
-As you can see, the guts of the generator function has been rewritten as a `switch` block (beginning on line 4). This gives a valuable clue about the inner workings. We can think of a generator like a state-machine in a loop, behaving differently based on how we interact with it. The `context$1$0` variable holds the current state, including which `case` block to execute next.
+Как видите, внутренности функции-генератора были переписаны с помощью блока `switch` (начиная со строки 4). Это дает ценный ключ к пониманию её внутренней работы. Мы можем думать о генераторе, как о конечном автомате в цикле, который ведёт себя по-разному, в зависимости от того, как мы с ним взаимодействуем. Переменная `context$1$0` содержит текущее состояние, в том числе какой блок `case` выполнится следующим.
 
-An easy way to understand this code is to pretend that the `case` statements are line numbers, and setting the value of `context$1$0.next` is a `GOTO`. If, like me, you started out years ago writing BASIC, I’ll give you a moment to wipe away the tears of blissful nostalgia before we move on.
+Простой способ понять этот код — сделать вид, что выражения `case` — это номера строк, а установка значения в `context$1$0.next` — это GOTO. Если, как и я, вы начинали много лет назад писать на Бейсик, я дам вам минутку, чтобы стереть слезы блаженной ностальгии, прежде чем мы продолжим.
 
-Take a look at that switch block again in those terms:
+Взгляните ещё раз на блок switch и эти условия:
 
-- `case 0`: initialize the value of `max` and proceed to `case 1`. (line 6)
-- `case 1`: send back (or “yield”) a random value and `GOTO 4` the next time we resume. (lines 13-14)
-- `case 4`: check whether the iterator sent a value (`context$1$0.sent`) and update the value of `max`. And then `GOTO 1`, to send back the next random number.
+- `case 0`: инициализирует значение `max` и переходит на `case 1` (строка 6).
+- `case 1`: возвращает случайное значение и и делает GOTO 4 для следующего раза, когда функция возобновится (строки 13-14).
+- `case 4`: проверяет значение, переданное итератором, и обновляет значение max. А затем выполняет GOTO 1, чтобы отправить обратно следующее случайное число.
 
-This gives us some insight into how a generator can loop infinitely, pausing until each new value is asked for, while still respecting the “do-not-block” rule.
+Это даёт некоторое представление о том, как генератор может работать бесконечно, останавливаясь после каждого значения, и при этом соблюдать правило «не блокируй».
 
-## When is true not true?
+## Когда истина — это не истина?
 
-Readers who were paying attention will have spotted that I skipped over lines 9-12:
+Внимательные читатели заметили, что я пропустил строки 9-12:
 
 ```js
 if (!true) {
@@ -140,17 +140,17 @@ if (!true) {
 }
 ```
 
-What’s going on here? It turns out this is how our original `while (true)` was rewritten. Every time the state-machine loops it checks whether we’ve reached the end. In our example this can never be, but there are plenty of times where you would want an exit clause in your generator. When that happens we have a `GOTO 8` which is where the generator shuts down.
+Что тут происходит? Оказывается, так был переписан оригинальный цикл `while (true)`. Конечный автомат каждый раз проверяет, дошли мы до конца или нет. В нашем примере это никогда не произойдёт, но есть много случаев, когда необходимо условие выхода из генератора. Когда оно выполняется, происходит GOTO 8, в котором генератор отключается.
 
-## Local state for iterators
+## Локальное состояние для итераторов
 
-Another interesting thing we see here is how the generator keeps a local state for every individual iterator. Because the `max` variable is scoped outside of the `regeneratorRuntime.wrap` closure its value will persist for subsequent calls to `iterator.next()`, as demonstrated earlier. And if we make a new iterator by calling `randomNumbers()` again a new closure will be created. This shows us how each iterator can have its own state without affecting others using the same generator.
+Еще одна интересная вещь, которую мы здесь видим, заключается в том, как генератор сохраняет локальное состояние для каждого отдельного итератора. Поскольку область видимости переменной `max` ограничена замыканием `regeneratorRuntime.wrap`, её значение будет сохраняться для последующих вызовов `iterator.next()`, как было показано ранее. Если мы создадим новый итератор, вызвав `randomNumbers()`, будет создано новое замыкание. Это показывает нам, как каждый итератор может иметь своё собственное состояние, не затрагивая другие итераторы и используя тот же генератор.
 
-## Inside the machine
+## Внутри машины
 
-What we’ve been looking at so far in the `switch` is actually just the “front” of the state-machine. You’ve probably noticed that the function is wrapped twice, with `regeneratorRuntime.mark` and `regeneratorRuntime.wrap`. These are from the [https://github.com/facebook/regenerator](https://github.com/facebook/regenerator) module and they define a generic state-machine in ES5 that behaves just like a generator-function does in ES6.
+Всё, что мы рассматривали ранее в блоке `switch` — это на самом деле только «фронт» конечного автомата. Вы, вероятно, обратили внимание, что функция обёрнута дважды функциями `regeneratorRuntime.mark` и `regeneratorRuntime.wrap`. Это функции из модуля [https://github.com/facebook/regenerator](https://github.com/facebook/regenerator), они определяют общий конечный автомат в ES5, который ведёт себя как функция-генератор в ES6.
 
-There’s a lot going on in the regnerator runtime but we’ll cover some of the interesting parts. First of all, we can see that the generator starts its life in the “Suspended Start” state (use the “source” link below to see this code snippet in context):
+В среде модуля regenerator многое происходит, но мы рассмотрим некоторые из интересных частей. Прежде всего, мы видим, что генератор начинает свою жизнь в состоянии «Suspended Start» («Приостановлен на старте») (используйте ссылку «источник» ниже, чтобы увидеть этот фрагмент кода в контексте):
 
 ```js
  function makeInvokeMethod(innerFn, self, context) {
@@ -159,25 +159,25 @@ There’s a lot going on in the regnerator runtime but we’ll cover some of the
     return function invoke(method, arg) {
 ```
 
-source: [runtime.js:130,133](https://github.com/facebook/regenerator/blob/v0.8.22/runtime.js#L130-L133)
+источник: [runtime.js:130,133](https://github.com/facebook/regenerator/blob/v0.8.22/runtime.js#L130-L133)
 
-At this point nothing much has happened – it has just created a function and returned it. This means even when we call `var iterator = generateRandoms()`, nothing inside `generateRandoms` actually gets executed until the first time we ask it for a value.
+На данный момент ничего особенного не произошло – regenerator только создал функцию и вернул её. Это означает, что даже при вызове `var iterator = generateRandoms()` ничего внутри `generateRandoms` фактически не выполняется, пока мы не попросим его значение.
 
-When we call `iterator.next()` the generator function (with the `switch` block that we looked at earlier) is called inside `tryCatch`:
+Когда мы вызываем метод `iterator.next()`, функция-генератор (с блоком `switch`, который мы рассматривали ранее) вызывается внутри `tryCatch`:
 
 ```js
 var record = tryCatch(innerFn, self, context);
 ```
 
-source: [runtime.js:234](https://github.com/facebook/regenerator/blob/v0.8.22/runtime.js#L234)
+источник: [runtime.js:234](https://github.com/facebook/regenerator/blob/v0.8.22/runtime.js#L234)
 
-and if the result was a normal `return` (rather than a `throw`) we package up the result in the [format expected of an iterable](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#The_.22iterable.22_protocol): `{ value, done }`. We also set the new state which will be either `GenStateCompleted` or `GenStateSuspendedYield`. In our case since it’s an infinite loop it will always go to “suspended yield”.
+и если результат возвращается с помощью `return` (а не `throw`), мы упаковываем результат в формат, ожидаемый итератором: `{ value, done }`. Мы также устанавливаем новое состояние: либо `GenStateCompleted`, либо `GenStateSuspendedYield`. В нашем случае, поскольку это бесконечный цикл, генератор всегда будет «приостановлен на yield».
 
 ```js
 var record = tryCatch(innerFn, self, context);
 if (record.type === "normal") {
-    // If an exception is thrown from innerFn, we leave state ===
-    // GenStateExecuting and loop back for another invocation.
+    // Если из innerFn выброшено исключение, мы оставляем state ===
+    // GenStateExecuting и возвращается для следующего вызова.
     state = context.done
         ? GenStateCompleted
         : GenStateSuspendedYield;
@@ -188,10 +188,10 @@ if (record.type === "normal") {
     };
 ```
 
-source: [runtime.js:234,245](https://github.com/facebook/regenerator/blob/v0.8.22/runtime.js#L234-L245)
+источник: [runtime.js:234,245](https://github.com/facebook/regenerator/blob/v0.8.22/runtime.js#L234-L245)
 
-## What can you do with it?
+## Что вы можете сделать с этим?
 
-Today we’ve used a simple generator function to model a state-machine that produces a potentially infinite sequence of values, that can be lazily consumed. This is behaviour we can start using right now: it is already natively supported in modern javascript platforms, and is easily transpiled for the rest.
+Сегодня мы использовали простую функцию-генератор для моделирования конечного автомата. Он создаёт потенциально бесконечную последовательность значений, которые можно лениво получать. Это поведение мы можем использовать прямо сейчас: оно уже поддерживается на современных JavaScript-платформах и легко транспилируется для остальных.
 
-As always, there are many ways you might reach the same goal. In that sense we don’t *need* generators, but if they allow us the expressiveness to achieve our intent in a way that “makes sense”, it’s all worthwhile. Have you found other ways to model solutions for common problems using generators?
+Как всегда, есть много способов достичь одной цели. В этом смысле генераторы не *необходимы*. Но если они дают нам выразительность для достижения наших намерений таким образом, что это «имеет смысл», оно того стоит. Вы нашли другие способы решения для общих проблем с использованием генераторов? Напишите мне в Twitter: [@joshwnj](https://twitter.com/joshwnj).
