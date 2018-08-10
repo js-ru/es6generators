@@ -4,6 +4,13 @@
 
 *Дата публикации: 03.08.2014*
 
+## ES6 Generators: Complete Series
+
+1. [The Basics Of ES6 Generators](bonus/es6_generators_basic/README.md)
+2. [Diving Deeper With ES6 Generators](bonus/es6_generators_dive/README.md)
+3. [Going Async With ES6 Generators](bonus/async_generators/README.md)
+4. [Getting Concurrent With ES6 Generators](bonus/concurrent_generators/README.md)
+
 Now that you've [seen ES6 generators](bonus/es6_generators_basic/README.md) and are [more comfortable](bonus/es6_generators_dive/README.md) with them, it's time to really put them to use for improving our real-world code.
 
 The main strength of generators is that they provide a single-threaded, synchronous-looking code style, **while allowing you to hide the asynchronicity away as an implementation detail**. This lets us express in a very natural way what the flow of our program's steps/statements is without simultaneously having to navigate asynchronous syntax and gotchas.
