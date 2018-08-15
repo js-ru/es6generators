@@ -39,3 +39,4 @@ bonus/es6_generators_dive/README.md
 bonus/async_generators/README.md
 bonus/concurrent_generators/README.md
 bonus/what-are-javascript-generators-and-how-to-use-them/README.md
+bonus/javascript-generator-yield-next-async-await/README.md
