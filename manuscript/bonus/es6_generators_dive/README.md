@@ -180,8 +180,6 @@ it.next(); // { value:undefined, done:true }
 
 В этом заключается интересное различие между `yield` и `yield*`: результат выражения `yield` — значение, переданное в последующий метод `next()`, а результат выражения `yield*` — возвращаемое с помощью `return` значение генератора, которому `yield*` делегирует управление (поскольку значения, переданные в метод `next()`, прозрачно проходят сквозь делегирование).
 
-That's an interesting distinction between `yield` and `yield*`: with `yield` expressions, the result is whatever is sent in with the subsequent `next(..)`, but with the `yield*` expression, it receives its result only from the delegated generator's `return` value (since `next(..)` sent values pass through the delegation transparently).
-
 Вы также можете обрабатывать ошибки (смотрите выше) в обоих направлениях через `yield*`:
 
 ```js
