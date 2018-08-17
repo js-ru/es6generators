@@ -1,41 +1,41 @@
-# A Quick, Practical Use Case for ES6 Generators
+# Простой практический вариант использования генераторов ES6
 
-## Building an Infinitely Repeating Array
+## Создание бесконечного повторяющегося массива
 
 *Перевод статьи Yash Agrawal: [A Quick, Practical Use Case for ES6 Generators](https://itnext.io/a-quick-practical-use-case-for-es6-generators-building-an-infinitely-repeating-array-49d74f555666)*
 
 *Дата публикации: 06.06.2018*
 
-## Preface
+## Предисловие
 
-You’ve probably heard of ES6 generators, perhaps you’ve even learned the syntax, and you may be wondering what they’re actually useful for in real life.
+Вы, наверное, слышали о генераторах ES6 и, возможно, даже изучили синтаксис. Вам может быть интересно, для чего они действительно могут быть полезны в реальной жизни.
 
-### Definition (from MDN)
+### Определение (c MDN)
 
-> Generators are functions which can be exited and later re-entered. Their context (variable bindings) will be saved across re-entrances. — [MDN] (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
+> Генераторы являются функциями с возможностью выхода и последующего входа. Их контекст исполнения (значения переменных) сохраняется при последующих входах. — [MDN] (https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Statements/function*)
 
-You may be thinking, “*Okay, but why would I want to do that?*” As it turns out, there are a whole range of use cases ranging from simple to complex, many of which involve Promises to make asynchronous requests (async/await is built on top of generators). My goal is to give you the first baby step into understanding how they work with a simple, real-life example so that you begin noticing when a generator is the most suitable solution to problems in your own code. Here we go.
+Возможно, вы думаете: «*Хорошо, но зачем мне это делать?*» Оказывается, существует целый ряд вариантов использования, от простых до сложных, многие из которых связаны с обещаниями (промисами) и асинхронными запросами (асинхронные функции с использованием async/await реализованы на базе генераторов). Моя цель — помочь вам сделать первый шаг к пониманию того, как работают генераторы, с помощью простого реального примера, чтобы вы начали замечать, когда генератор является наиболее подходящим решением в вашем собственном коде. Вот так.
 
-## Use Case
+## Вариант использования
 
-I’m building an app in which my users can calculate a 3-week workout cycle, with a setting to work out between 3 and 7 days per week during the cycle. Each individual workout is based on one of the following 4 lifts: *squat*, *bench press*, *deadlift*, and *overhead press*, and each successive workout must be based on the next lift in that order:
+Я разрабатываю приложение, в котором мои пользователи могут рассчитать трёхнедельный цикл тренировок. В приложении можно установить от 3 до 7 тренировок в неделю в течение цикла. Каждая отдельная тренировка основана на одном из четырёх упражнений: *приседания*, *жим лёжа*, *мёртвая тяга* и *упражнение на пресс*. Каждая последующая тренировка должна основываться на следующем упражнении в таком порядке:
 
-- Squat
-- Bench
-- Deadlift
-- Overhead press
-- Squat
-- Bench
-- Deadlift
-- Overhead press
-- …
+- Приседания 
+- Жим лёжа 
+- Мёртвая тяга
+- Упражнение на пресс
+- Приседания 
+- Жим лёжа 
+- Мёртвая тяга
+- Упражнение на пресс
+- ...
 
-You can probably see where this is going.
+Вероятно, вы такое видели.
 
-I need my code to say, “*Give me the lift for the next workout, then the next, then the next, etc. When the end of the list of lifts is reached, start over from the beginning and keep repeating forever, until I’ve generated all the workouts for the 3-week cycle.*” Here’s a simplified version of how I initially implemented it, without generators:
+Мне нужно сказать моему коду: «*Дай мне упражнение для следующей тренировки, затем для следующей, затем для следующей и т. д. Когда будет достигнут конец списка упражнений, начни с самого начала и продолжай повторять, пока я не сгенерирую все тренировки для трёхнедельного цикла*». Вот упрощённая версия, которую я изначально реализовал без генераторов:
 
 ```js
-const lifts = ['squat', 'bench', 'deadlift', 'press'];
+const lifts = ['приседания', 'жим лёжа', 'мёртвая тяга', 'пресс'];
 const numWeeks = 3;
 const daysPerWeek = 6;
 
@@ -43,14 +43,14 @@ const totalNumSessions = numWeeks * daysPerWeek;
 
 let currentLiftIndex = 0;
 
-// This creates an empty array of totalNumSessions length
-// for me to map over
+// Создаёт пустой массив длинной totalNumSessions,
+// и проходит по нему с помощью map
 const cycle = [...Array(totalNumSessions)].map(() => ({
     lift: lifts[currentLiftIndex++ % lifts.length]
 }));
 ```
 
-Not *too* bad, but it could be more declarative. Wouldn’t it be nice if we didn’t have to keep track of that `currentLiftIndex` directly in our workout generation code? It decreases the readability of the code and feels like it belongs in its own function. Here’s the code using a generator function, I’ll explain it below.
+Не *слишком* плохо, но может быть более декларативно. Было бы неплохо, если бы нам не приходилось отслеживать переменную `currentLiftIndex` непосредственно в коде генерации тренировки, не так ли? Она уменьшает читаемость кода и выглядит так, как будто принадлежит своей собственной функции. Вот код с использованием функции-генератора, который я объясню ниже.
 
 ```js
 function* repeatedArray(arr) {
@@ -60,7 +60,7 @@ function* repeatedArray(arr) {
   }
 }
 
-const lifts = ['squat', 'bench', 'deadlift', 'press'];
+const lifts = ['приседания', 'жим лёжа', 'мёртвая тяга', 'пресс'];
 const nextLiftGenerator = repeatedArray(lifts);
 
 const numWeeks = 3;
@@ -68,17 +68,21 @@ const daysPerWeek = 6;
 
 const totalNumSessions = numWeeks * daysPerWeek;
 
-// This creates an empty array of totalNumSessions length
-// for me to map over
+// Создаёт пустой массив длинной totalNumSessions,
+// и проходит по нему с помощью map
 const cycle = [...Array(totalNumSessions)].map(() => ({
   lift: nextLiftGenerator.next().value,
 }));
 ```
 
-Here, the code is more declarative and readable. We abstracted the index-tracking logic into a general-purpose utility function called `repeatedArray`. The `function *` syntax tells JavaScript that this is a generator function. All we have to do is ask for the next item in the “repeated array” and our generator gives it to us. The best part is **we don’t have to worry about how it’s happening outside of our generator function**.
+Здесь код более декларативный и читаемый. Мы абстрагировали логику отслеживания индексов с помощью универсальной служебной функции `repeatedArray`. Синтаксис `function *` говорит JavaScript, что это функция-генератор. Всё, что нам нужно сделать — это попросить следующий элемент «повторяющегося» массива, и наш генератор отдаст его. А главное — **снаружи функции-генератора нам не нужно беспокоиться о том, как это происходит**.
 
-Here’s what’s happening:
+А вот что происходит:
 
-`repeatedArray` returns an **iterator** object *for the repeatedArray function itself* (read that twice) when we call it on line 9. The iterator is stored in a variable named `nextLiftGenerator`. It’s important to understand that the code in the function hasn’t been executed at this point. The function is only executed when we call the `next()` function on the `nextLiftGenerator` iterator, and it’s only executed up until it hits a `yield`. Our generator gives us the value, then waits until the next call to continue execution until it hits another `yield`, then returns that value. Make sense? That’s it!
+Функция `repeatedArray` возвращает **объект-итератор** *для самой функции repeatedArray* (прочтите это дважды), когда мы вызываем её в строке 9. Итератор хранится в переменной `nextLiftGenerator`. Важно понять, что код функции в этот момент не выполняется. Функция выполняется, только когда мы вызываем метод `next()` у итератора `nextLiftGenerator`, и только до следующего выражения `yield`. Наш генератор отдаёт значение, а потом ждёт следующий вызов, чтобы продолжить выполнение до тех пор, пока не встретит другой `yield`, а затем отдаст значение. Уловили смысл? Вот и вся суть!
 
-This is obviously a very simple example, but hopefully it helped you understand how generators work, and also why generators are such a powerful feature in JavaScript.
+Очевидно, это очень простой пример, но, надеюсь, он помог вам понять, как работают генераторы, а также почему генераторы — такая мощная особенность в JavaScript.
+
+Если вам понравилась эта статья, подпишитесь на меня в [Twitter](https://twitter.com/ReisnerShawn) или [Instagram](https://www.instagram.com/shawn.webdev/), чтобы получить больше ботанского контента!
+
+Хорошего кодинга!
