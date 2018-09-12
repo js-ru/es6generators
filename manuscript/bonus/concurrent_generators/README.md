@@ -1,44 +1,45 @@
-# Getting Concurrent With ES6 Generators
+# Параллелизм с генераторами ES6
 
 *Перевод статьи Kyle Simpson: [Getting Concurrent With ES6 Generators](https://davidwalsh.name/concurrent-generators)*
 
 *Дата публикации: 12.08.2014*
 
-## ES6 Generators: Complete Series
+## Генераторы ES6: Полная серия
 
-1. [The Basics Of ES6 Generators](bonus/es6_generators_basic/README.md)
-2. [Diving Deeper With ES6 Generators](bonus/es6_generators_dive/README.md)
-3. [Going Async With ES6 Generators](bonus/async_generators/README.md)
-4. [Getting Concurrent With ES6 Generators](bonus/concurrent_generators/README.md)
+1. [Основы генераторов ES6](bonus/es6_generators_basic/README.md)
+2. [Глубокое погружение в генераторы ES6](bonus/es6_generators_dive/README.md)
+3. [Асинхронность с генераторами ES6](bonus/async_generators/README.md)
+4. [Параллелизм с генераторами ES6](bonus/concurrent_generators/README.md)
 
-If you've read and digested [part 1](bonus/es6_generators_basic/README.md), [part 2](bonus/es6_generators_dive/README.md), and [part 3](bonus/async_generators/README.md) of this blog post series, you're probably feeling pretty confident with ES6 generators at this point. Hopefully you're inspired to really push the envelope and see what you can do with them.
+Если вы прочитали и переварили [часть 1](bonus/es6_generators_basic/README.md), [часть 2](bonus/es6_generators_dive/README.md) и [часть 3](bonus/async_generators/README.md) этой серии постов, то на этом этапе вы, вероятно, чувствуете себя довольно уверенно с генераторами ES6. Надеюсь, вы вдохновились, чтобы действительно развернуть конверт и посмотреть, что вы можете с ними сделать.
 
-Our final topic to explore is kinda bleeding edge stuff, and may twist your brain a bit (still twisting mine, TBH). Take your time working through and thinking about these concepts and examples. Definitely read other writings on the topic.
+Наша последняя тема для изучения может немного покрутить ваш мозг (и всё ещё скручивает мой). Не спешите, проработайте и обдумайте эти концепции и примеры. Определенно, стоит почитать другие материалы по этой теме.
 
-The investment you make here will really pay off in the long run. I'm totally convinced that the future of sophisticated async capability in JS is going to rise from these ideas.
+Инвестиции, которые вы здесь делаете, действительно окупятся в долгосрочной перспективе. Я полностью убежден, что будущее сложных асинхронных возможностей в JS будет развиваться из этих идей.
 
-## Formal CSP (Communicating Sequential Processes)\
-First off, I am completely inspired in this topic almost entirely due to the fantastic work of [David Nolen @swannodette](http://twitter.com/swannodette). Seriously, read whatever he writes on the topic. Here's some links to get you started:
+## Формальные CSP (Communicating Sequential Processes / Взаимодействующие последовательные процессы)
+
+Во-первых, я вдохновлён этой темой почти полностью благодаря фантастической работе [Дэвида Нолена @swannodette](http://twitter.com/swannodette). Серьезно, прочитайте всё, что он пишет по этой теме. Вот несколько ссылок, которые помогут вам начать:
 
 - [Communicating Sequential Processes](http://swannodette.github.io/2013/07/12/communicating-sequential-processes/)
 - [ES6 Generators Deliver Go Style Concurrency](http://swannodette.github.io/2013/08/24/es6-generators-and-csp/)
 - [Extracting Processes](http://swannodette.github.io/2013/07/31/extracting-processes/)
 
-OK, now to my exploration of the topic. I don't come to JS from a formal background in Clojure, nor do I have any experience with Go or ClojureScript. I found myself quickly getting kinda lost in those readings, and I had to do a lot of experimentation and educated guessing to glean useful bits from it.
+Хорошо, теперь моё исследование темы. Я пришёл в JS без формальной базы в Clojure, и у меня нет опыта работы с Go или ClojureScript. Я обнаружил, что быстро теряюсь в этой теме, и мне приходилось делать много экспериментов и предположений, чтобы извлечь полезные части.
 
-In the process, I think I've arrived at something that's of the same spirit, and goes after the same goals, but comes at it from a much-less-formal way of thinking.
+Мне кажется, что в этом процессе я пришёл к чему-то, что имеет тот же дух и служит тем же целям, но исходит из гораздо менее формального мышления.
 
-What I've tried to do is build up a simpler take on the Go-style CSP (and ClojureScript core.async) APIs, while preserving (I hope!) most of the underlying capabilities. It's entirely possible that those smarter than me on this topic will quickly see things I've missed in my explorations thus far. If so, I hope my explorations will evolve and progress, and I'll keep sharing such revelations with you readers!
+Я пытался упростить использование CSP API в стиле Go (и ClojureScript core.async), сохранив (надеюсь) большинство базовых возможностей. Вполне возможно, что те, кто лучше меня разбирается в этой теме, быстро заметят то, что я до сих пор пропустил в своих исследованиях. Если это так, я надеюсь, что мои исследования будут развиваться и развиваться, и я буду делиться такими откровениями с вами!
 
-## Breaking CSP Theory Down (a bit)
+## Разбор теории CSP (небольшой)
 
-What is CSP all about? What does it mean to say "communicating"? "Sequential"? What are these "processes"?
+Что такое CSP? Что значит «взаимодействующие»? «Последовательные»? Что это за «процессы»?
 
-First and foremost, CSP comes from [Tony Hoare's book "Communicating Sequential Processes"](http://www.usingcsp.com/). It's heavy CS theory stuff, but if you're interested in the academic side of things, that's the best place to start. I am by no means going to tackle the topic in a heady, esoteric, computer sciency way. I'm going to come at it quite informally.
+Прежде всего, понятие CSP пришло из книги [Тони Хоара «Взаимодействующие последовательные процессы»](http://www.usingcsp.com/). Это тяжелый теоретический материал, но если вы заинтересованы в академической стороне вещей, это лучшее место для начала. Я ни в коем случае не собираюсь заниматься этой темой эзотерическим, научным способом. Я собираюсь подойти к ней довольно неформально.
 
-So, let's start with "sequential". This is the part you should already be familiar with. It's another way of talking about single-threaded behavior and the sync-looking code that we get from ES6 generators.
+Итак, давайте начнем со слова «последовательные». Это та часть, с которой вы уже знакомы. Это еще один способ сказать об однопоточном поведении и синхронном коде, который мы получаем от генераторов ES6.
 
-Remember how generators have syntax like this:
+Напомню, что генераторы имеют такой синтаксис:
 
 ```js
 function *main() {
@@ -48,157 +49,157 @@ function *main() {
 }
 ```
 
-Each of those statements is executed sequentially (in order), one at a time. The `yield` keyword annotates points in the code where a blocking pause (blocking only in the sense of the generator code itself, not the surrounding program!) may occur, but that doesn't change anything about the top-down handling of the code inside `*main()`. Easy enough, right?
+Каждый из этих операторов выполняется последовательно (по порядку), по одному за раз. Ключевое слово `yield` указывает точки в коде, где может произойти блокирующая пауза (блокировка только в смысле кода генератора, а не окружающей программы!), но это ничего не меняет в отношении обработки кода сверху вниз внутри функции `*main()`. Легко, правда?
 
-Next, let's talk about "processes". What's that all about?
+Далее, давайте поговорим о «процессах». Что это значит?
 
-Essentially, a generator sort of acts like a virtual "process". It's a self-contained piece of our program that could, if JavaScript allowed such things, run totally in parallel to the rest of the program.
+По сути, генератор действует как виртуальный «процесс». Это самостоятельная часть нашей программы, которая, если бы JavaScript позволял такие вещи, выполнялась бы полностью параллельно остальной части программы.
 
-Actually, that'd fudging things a little bit. If the generator accesses shared memory (that is, if it accessed "free variables" besides its own internal local variables), it's not quite so independent. But let's just assume for now we have a generator function that doesn't access outside variables (so FP theory would call it a "combinator"). So, it could *in theory* run in/as its own process.
+Вообще-то, это не совсем так. Если генератор обращается к общей памяти (то есть, если он обращается к «свободным переменным», а не только к собственным локальным переменным), он не совсем независим. Но давайте просто предположим, что на данный момент у нас есть функция-генератор, которая не имеет доступа к внешним переменным (теория функционального программирования назвала бы её «комбинатором»). Таким образом, она могла бы теоретически функционировать как самостоятельный процесс.
 
-But we said "processes" — plural — because the important part here is having two or more going *at once*. In other words, two or more generators that are paired together, generally to cooperate to complete some bigger task.
+Но мы говорим «процессы» — во множественном числе — потому что важная часть здесь состоит в том, чтобы их было сразу два или несколько. Другими словами, два или более генератора, которые соединены вместе, сотрудничают, чтобы выполнить одну большую задачу.
 
-Why separate generators instead of just one? The most important reason: **separation of capabilities/concerns**. If you can look at task XYZ and break it down into constituent sub-tasks like X, Y, and Z, then implementing each in its own generator tends to lead to code that can be more easily reasoned about and maintained.
+Зачем разделять генераторы вместо использования одного? Самая важная причина: **разделение ответственности**. Если вы можете разбить задачу XYZ на составляющие подзадачи, такие как X, Y и Z, то реализация каждой подзадачи в своём собственном генераторе приведёт к созданию кода, который легче понять и поддерживать.
 
-This is the same sort of reasoning you use when you take a function like `function XYZ()` and break it down into `X()`, `Y()`, and `Z()` functions, where `X()` calls `Y()`, and `Y()` calls `Z()`, etc. We break down functions into separate functions to get better separation of code, which makes code easier to maintain.
+Это то же самое рассуждение, которое вы используете, когда берёте функцию `XYZ()` и разбиваете её на функции `X()`, `Y()` и `Z()`, где `X()` вызывает `Y()`, а `Y()` вызывает `Z()` и т. д. Мы разбиваем функцию на отдельные функции, чтобы упростить поддержку кода.
 
-**We can do the same thing with multiple generators.**
+**То же самое мы можем сделать с несколькими генераторами.**
 
-Finally, "communicating". What's that all about? It flows from the above — cooperation — that if the generators are going to work together, they need a communication channel (not just access to the shared surrounding lexical scope, but a real shared communication channel they all are given exclusive access to).
+Наконец, «взаимодействующие». Что это значит? Это вытекает из вышесказанного — если генераторы собираются работать вместе, им нужен канал связи (не только доступ к общей лексической области видимости, а полноценный общий канал связи, к которому они будут иметь эксклюзивный доступ).
 
-What goes over this communication channel? Whatever you need to send (numbers, strings, etc). In fact, you don't even need to actually send a message over the channel to communicate over the channel. "Communication" can be as simple as coordination — like transferring control from one to another.
+Что может передаваться по этому каналу связи? Всё, что вам нужно отправить (числа, строки и т. д.). Фактически, для связи вам даже не нужно отправлять сообщения. «Коммуникация» может быть такой же простой, как и координация — передача управления от одного генератора к другому.
 
-Why transferring control? Primarily because JS is single-threaded and literally only one of them can be actively running at any given moment. The others then are in a running-paused state, which means they're in the middle of their tasks, but are just suspended, waiting to be resumed when necessary.
+Почему нужно передавать управление? Прежде всего потому, что JS является однопоточным, и буквально только один из генераторов может активно работать в любой момент. Остальные находятся в состоянии ожидания, а это означает, что они находятся в середине выполнения, но приостановлены и ожидают возобновления.
 
-It doesn't seem to be realistic that arbitrary independent "processes" could *magically* cooperate and communicate. The goal of loose coupling is admirable but impractical.
+Кажется нереальным, что произвольные независимые «процессы» могут *волшебным образом* взаимодействовать и общаться. Стремление к слабой связанности замечательно, но сложно на практике.
 
-Instead, it seems like any successful implementation of CSP is an intentional factorization of an existing, well-known set of logic for a problem domain, where each piece is designed specifically to work well with the other pieces.
+Вместо этого кажется, что любая успешная реализация CSP представляет собой преднамеренную факторизацию существующего, хорошо известного набора логики для предметной области, где каждая часть предназначена специально для работы с другими частями.
 
-Maybe I'm totally wrong on this, but I don't see any pragmatic way yet that any two random generator functions could somehow easily be glued together into a CSP pairing. They would both need to be designed to work with the other, agree on the communication protocol, etc.
+Возможно, я совершенно в этом не прав, но я пока не вижу практического способа реализовать, чтобы две совершенно случайные функции-генератора могли быть связаны в CSP пару. Они обе должны быть разработаны для работы друг с другом, иметь общий протокол связи и т. д.
 
-## CSP In JS
+## CSP в JS
 
-There are several interesting explorations in CSP theory applied to JS.
+Есть несколько интересных исследований в теории CSP, применимых к JS.
 
-The aforementioned David Nolen has several interesting projects, including [Om](https://github.com/swannodette/om), as well as [core.async](http://www.hakkalabs.co/articles/core-async-a-clojure-library/). The [Koa](http://koajs.com/) library (for node.js) has a very interesting take, primarily through its `use(..)` method. Another library that's pretty faithful to the core.async/Go CSP API is [js-csp](https://github.com/ubolonton/js-csp).
+У вышеупомянутого Дэвида Нолена есть несколько интересных проектов, включая [Om](https://github.com/swannodette/om), а также core.async(http://www.hakkalabs.co/articles/core-async-a-clojure-library/). Библиотека Koa(http://koajs.com/) (для node.js) имеет очень интересный подход, в первую очередь благодаря методу `use(...)`. Другая библиотека, которая очень близка к core.async / Go CSP API, — это [js-csp](https://github.com/ubolonton/js-csp).
 
-You should definitely check out those great projects to see various approaches and examples of how CSP in JS is being explored.
+Вам определённо стоит познакомиться с этими прекрасными проектами, чтобы увидеть различные подходы и примеры того, как CSP реализуется в JS.
 
-## asynquence's runner(..): Designing CSP
+## asynquence's runner(...): проектирование CSP
 
-Since I've been trying intensely to explore applying the CSP pattern of concurrency to my own JS code, it was a natural fit for me to extend my async flow-control lib [asynquence](http://github.com/getify/asynquence) with CSP capability.
+Поскольку я интенсивно пытался исследовать применение параллелизма CSP в моём собственном JS-коде, для меня было естественно расширить мою библиотеку для управления асинхронным потоком [asyncquence](http://github.com/getify/asynquence) возможностями CSP.
 
-I already had the `runner(..)` plugin utility which handles async running of generators (see ["Part 3: Going Async With Generators"](bonus/async_generators/README.md)), so it occurred to me that it could be fairly easily extended to handle multiple generators at the same time [in a CSP-like fashion](https://github.com/getify/asynquence/tree/master/contrib#csp-style-concurrency).
+У меня уже был плагин `runner(...)`, который обрабатывал асинхронные запуски генераторов (см. [«Часть 3: Асинхронность с генераторами ES6»](bonus/async_generators/README.md)), поэтому мне пришло в голову, что его можно было бы довольно легко расширить, чтобы он мог обрабатывать несколько генераторов одновременно [в стиле CSP](https://github.com/getify/asynquence/tree/master/contrib#csp-style-concurrency).
 
-The first design question I tackled: how do you know which generator gets control *next*?
+Первый вопрос проектирования, который я рассматривал: как узнать, какой генератор получит управление *следующим*?
 
-It seemed overly cumbersome/clunky to have each one have some sort of ID that the others have to know about, so they can address their messages or control-transfer explicitly to another process. After various experiments, I settled on a simple round-robin scheduling approach. So if you pair three generators A, B, and C, A will get control first, then B takes over when A yields control, then C when B yields control, then A again, and so on.
+Можно было бы добавить каждому генератору свой идентификатор, о котором знали бы другие генераторы. Тогда генераторы могли бы адресовывать свои сообщения или передавать управление другому конкретному процессу. Но это решение казалось чрезмерно громоздким и неуклюжим. После различных экспериментов я остановился на простом круговом планировании. Поэтому, если вы соедините три генератора A, B и C, сначала A получит управление, затем, когда A отдаст управление, B начнёт работать, а потом C, когда B отдаст управление, затем снова A и т. д.
 
-But how should we actually transfer control? Should there be an explicit API for it? Again, after many experiments, I settled on a more implicit approach, which seems to (completely accidentally) be similar to how [Koa does it](http://koajs.com/#cascading): each generator gets a reference to a shared "token" — `yield`ing it will signal control-transfer.
+Но как мы должны передавать управление? Должен ли быть явный API для этого? Опять же, после многих экспериментов я остановился на более неявном подходе, который кажется (совершенно случайно) похожим на то, как [это делает Коа](http://koajs.com/#cascading): каждый генератор получает ссылку на общий «токен». Когда генератор отдаёт его с помощью yield — это сигнализирует о передаче управления.
 
-Another issue is what the message channel should look like. On one end of the spectrum you have a pretty formalized communication API like that in core.async and js-csp (`put(..)` and `take(..)`). After my own experiments, I leaned toward the other end of the spectrum, where a much less formal approach (not even an API, just a shared data structure like an `array`) seemed appropriate and sufficient.
+Другой вопрос заключается в том, как должен выглядеть канал сообщений. С одной стороны у нас есть довольно формализованный API коммуникации, как в core.async и js-csp (`put(...)` и `take(...)`). После моих собственных экспериментов я склонился к другому, гораздо менее формальному подходу: даже не API, а просто общая структура данных, вроде массива, казалась подходящей и достаточной.
 
-I decided on having an array (called `messages`) that you can arbitrarily decide how you want to fill/drain as necessary. You can `push()` messages onto the array, `pop()` messages off the array, designate by convention specific slots in the array for different messages, stuff more complex data structures in these slots, etc.
+Я решил завести массив `messages`. Вы можете произвольно решить, как вы хотите заполнять/очищать его по мере необходимости. Вы можете добавлять сообщения в массив с помощью `push()`, получать сообщения из массива с помощью `pop()`, назначать разные сообщения по определенным конкретным слотам в массиве, создавать более сложные структуры данных в этих слотах и т. д.
 
-My suspicion is that some tasks will need really simple message passing, and some will be much more complex, so rather than forcing complexity on the simple cases, I chose not to formalize the message channel beyond it being an `array` (and thus no API except that of `array`s themselves). It's easy to layer on additional formalism to the message passing mechanism in the cases where you'll find it useful (see the *state machine* example below).
+Моё подозрение состоит в том, что для некоторых задач потребуется очень простая передача сообщений, а некоторые будут намного сложнее. Поэтому вместо того, чтобы увеличивать сложность в простых случаях, я решил не накладывать никаких формальных требований на канал сообщений, кроме того, что он должен быть массивом (и, следовательно, нет никакого API, кроме самого массива). Легко наложить дополнительный формализм на механизм передачи сообщений в тех случаях, когда это будет необходимо (смотрите пример *конечного автомата* ниже).
 
-Finally, I observed that these generator "processes" still benefit from the [async capabilities that stand-alone generators](bonus/async_generators/README.md) can use. In other words, if instead of yielding out the control-token, you yield out a Promise (or *asynquence* sequence), the `runner(..)` mechanism will indeed pause to wait for that future value, but will **not transfer control** — instead, it will return the result value back to the current process (generator) so it retains control.
+Наконец, я заметил, что эти «процессы» по-прежнему выигрывают по сравнению с [асинхронными возможностями, которые предоставляют автономные генераторы](bonus/async_generators/README.md). Другими словами, если вместо того, чтобы отдать токен управления, вы отдаёте Promise (или последовательность *asyncquence*), механизм `runner(...)` действительно остановится, чтобы дождаться этого будущего значения, но **не передаст управление** — вместо этого, он вернёт значение результата обратно в текущий процесс (генератор), чтобы он сохранял контроль.
 
-That last point might be (if I interpret things correctly) the most controversial or unlike the other libraries in this space. It seems that true CSP kind of turns its nose at such approaches. However, I'm finding having that option at my disposal to be very, very useful.
+Этот последний момент может быть (если я правильно интерпретирую вещи) наиболее противоречивым и отличным от других библиотек в этой области. Кажется, что истинный CSP не признаёт такие подходы. Тем не менее, я считаю, что этот вариант очень и очень полезен.
 
-## A Silly FooBar Example
+## Простой пример FooBar
 
-Enough theory. Let's just dive into some code:
+Хватит теории. Давайте погрузимся в код:
 
 ```js
-// Note: omitting fictional `multBy20(..)` and
-// `addTo2(..)` asynchronous-math functions, for brevity
+// Примечание: асинхронные математические функции `multBy20(..)` и
+// `addTo2(..)` опущены для краткости
 
 function *foo(token) {
-    // grab message off the top of the channel
+    // берём верхнее сообщение из канала
     var value = token.messages.pop(); // 2
 
-    // put another message onto the channel
-    // `multBy20(..)` is a promise-generating function
-    // that multiplies a value by `20` after some delay
+    // кладём другое сообщение в канал
+    // `multBy20(..)` - функция на основе промиса,
+    // которая умножает значение на `20` после некоторой задержки
     token.messages.push( yield multBy20( value ) );
 
-    // transfer control
+    // передаём управление
     yield token;
 
-    // a final message from the CSP run
-    yield "meaning of life: " + token.messages[0];
+    // последнее сообщение от CSP
+    yield "смысл жизни: " + token.messages[0];
 }
 
 function *bar(token) {
-    // grab message off the top of the channel
+    // берём верхнее сообщение из канала
     var value = token.messages.pop(); // 40
 
-    // put another message onto the channel
-    // `addTo2(..)` is a promise-generating function
-    // that adds value to `2` after some delay
+    // кладём другое сообщение в канал
+    // `addTo2(..)` - функция на основе промиса,
+    // которая прибавляет к значению `2` после некоторой задержки
     token.messages.push( yield addTo2( value ) );
 
-    // transfer control
+    // передаём управление
     yield token;
 }
 ```
 
-OK, so there's our two generator "processes", `*foo()` and `*bar()`. You'll notice both of them are handed the `token` object (you could call it whatever you want, of course). The `messages` property on the `token is our shared message channel. It starts out filled with the message(s) passed to it from the initialization of our CSP run (see below).
+Хорошо, здесь у нас есть два «процесса»: `*foo()` и `*bar()`. Вы заметите, что оба они передают объект `token` (вы можете назвать его, как хотите, конечно). Свойство `messages` в объекте `token` — это общий канал сообщений. В начале он заполнен сообщением(-ями), переданным ему при запуске CSP (см. ниже).
 
-`yield token` explicitly transfers control to the "next" generator (round-robin order). However, `yield multBy20(value)` and `yield addTo2(value)` are both yielding promises (from these fictional delayed-math functions), which means that the generator is paused at that moment until the promise completes. Upon promise resolution, the currently-in-control generator picks back up and keeps going.
+Выражение `yield token` явно передаёт управление «следующему» генератору (по кругу). Однако функции `yield multBy20(value)` и `yield addTo2(value)` обе отдают промисы (фиктивные отложенные математические функции), а это значит, что генератор в этот момент останавливается и ждёт завершения промиса. После завершения промиса, генератор, у которого в текущий момент находится управление, продолжает выполнение.
 
-Whatever the final yielded value is, in this case the `yield "meaning of...` expression statement, that's the completion message of our CSP run (see below).
+Каким бы ни было значение финального выражения `yield`, в нашем случае выражения `yield «смысл жизни...` — это сообщение о завершении выполнения CSP (см. ниже).
 
-Now that we have our two CSP process generators, how do we run them? Using *asynquence*:
+Итак, у нас есть два CSP генератора, как запустить их? Будем использовать *asyncquence*:
 
 ```js
-// start out a sequence with the initial message value of `2`
+// инициализируем последовательность с начальным значением `2`
 ASQ( 2 )
 
-// run the two CSP processes paired together
+// запускаем два CSP процесса вместе
 .runner(
     foo,
     bar
 )
 
-// whatever message we get out, pass it onto the next
-// step in our sequence
+// какое бы сообщение мы не получили, передаём его
+// на следующий шаг последовательности
 .val( function(msg){
-    console.log( msg ); // "meaning of life: 42"
+    console.log( msg ); // "смысл жизни: 42"
 } );
 ```
 
-Obviously, this is a trivial example. But I think it illustrates the concepts pretty well.
+Конечно, это тривиальный пример. Но я думаю, что он прекрасно иллюстрирует концепцию.
 
-Now might be a good time to [go try it yourself](http://jsbin.com/tunec/2/edit?js,console) (try changing the values around!) to make sure these concepts make sense and that you can code it up yourself!
+Теперь самое время, чтобы [поэкспериментировать с этим примером](http://jsbin.com/tunec/2/edit?js,console) самостоятельно (попробуйте поменять значения!), чтобы убедиться, что эти понятия имеют смысл и что вы можете сами с ними работать!
 
-## Another Toy Demo Example
+## Другой демонстрационный пример
 
-Let's now examine one of the classic CSP examples, but let's come at it from the simple observations I've made thus far, rather than from the academic-purist perspective it's usually derived from.
+Давайте рассмотрим один из классических примеров CSP, но подойдём к нему из моих простых наблюдений, а не с академической точки зрения.
 
-**Ping-pong**. What a fun game, huh!? It's my favorite *sport*.
+**Пинг-понг**. Весёлая игра, правда? Мой любимый *спорт*.
 
-Let's imagine you have implemented code that plays a ping-pong game. You have a loop that runs the game, and you have two pieces of code (for instance, branches in an `if` or `switch` statement) that each represent the respective player.
+Представим, что вы реализовали код, который играет в настольный теннис. У вас есть цикл, который запускает игру, и две части кода (например, ветви в инструкции `if` или `switch`), каждая из которых соответствует определённому игроку.
 
-Your code works fine, and your game runs like a ping-pong champ!
+Ваш код работает отлично, а ваша игра — чемпион по пинг-понг!
 
-But what did I observe above about why CSP is useful? **Separation of concerns/capabilities.** What are our separate capabilities in the ping-pong game? *The two players!*
+Но о чём я говорил выше, чем полезна концепция CSP? **Разделение ответственности.** Каковы отдельные ответственности в игре пинг-понг? *Два игрока!*
 
-So, we could, at a very high level, model our game with two "processes" (generators), one for each *player*. As we get into the details of it, we will realize that the "glue code" that's shuffling control between the two players is a task in and of itself, and *this* code could be in a third generator, which we could model as the game *referee*.
+Таким образом, мы могли бы на высоком уровне спроектировать нашу игру с двумя «процессами» (генераторами), по одному для каждого *игрока*. Когда мы перейдём к деталям, мы поймем, что «склеивающий код», который передаёт управление между двумя игроками, сам по себе является процессом. *Этот* код может быть реализован как третий генератор — *судья*.
 
-We're gonna skip over all kinds of domain-specific questions, like scoring, game mechanics, physics, game strategy, AI, controls, etc. The only part we care about here is really just simulating the back-and-forth pinging (which is actually our metaphor for CSP control-transfer).
+Мы пропустим все специфические вопросы, например, ведение счёта, игровая механика, физика, стратегия, искусственный интеллект, элементы управления и т. д. Единственная деталь, о которой мы здесь позаботимся, — передача мячика туда-сюда (которая на самом деле является метафорой для передачи управления в CSP).
 
-**Wanna see the demo?** [Run it now](http://jsbin.com/qutabu/1/edit?js,output) (note: use a very recent nightly of FF or Chrome, with ES6 JavaScript support, to see generators work)
+**Хотите посмотреть демо?** [Запустите его прямо сейчас](http://jsbin.com/qutabu/1/edit?js,output).
 
-Now, let's look at the code piece by piece.
+Теперь давайте резберём код строка за строкой.
 
-First, what does the *asynquence* sequence look like?
+Во-первых, как выглядит последовательность *asyncquence*?
 
 ```js
 ASQ(
-    ["ping","pong"], // player names
-    { hits: 0 } // the ball
+    ["ping","pong"], // имена игроков
+    { hits: 0 } // мяч
 )
 .runner(
     referee,
@@ -206,46 +207,46 @@ ASQ(
     player
 )
 .val( function(msg){
-    message( "referee", msg );
+    message( "судья", msg );
 } );
 ```
 
-We set up our sequence with two initial messages: `["ping","pong"]` and `{ hits: 0 }`. We'll get to those in a moment.
+Мы создали последовательность с двумя начальными сообщениями: `['ping', 'pong']` и `{ hits: 0 }`. Мы скоро до них доберемся.
 
-Then, we set up a CSP run of 3 processes (coroutines): the `*referee()` and two `*player()` instances.
+Затем мы запустили CSP из трех процессов (сопрограмм): один экземпляр `*referee()` и два экземпляра `*player()`.
 
-The final message at the end of the game is passed along to the next step in our sequence, which we then output as a message *from the referee*.
+Окончательное сообщение в конце игры передаётся на следующий шаг в нашей последовательности, а затем выводится как *сообщение от судьи*.
 
-The implementation of the referee:
+Реализация судьи:
 
 ```js
 function *referee(table){
     var alarm = false;
 
-    // referee sets an alarm timer for the game on
-    // his stopwatch (10 seconds)
+    // судья устанавливает таймер для игры
+    // на своем секундомере (10 секунд)
     setTimeout( function(){ alarm = true; }, 10000 );
 
-    // keep the game going until the stopwatch
-    // alarm sounds
+    // продолжайте игру
+    // пока не зазвучит таймер
     while (!alarm) {
-        // let the players keep playing
+        // позволяет игрокам играть
         yield table;
     }
 
-    // signal to players that the game is over
+    // сигнал игрокам о том, что игра окончена
     table.messages[2] = "CLOSED";
 
-    // what does the referee say?
-    yield "Time's up!";
+    // что говорит судья?
+    yield "Время вышло!";
 }
 ```
 
-I've called the control-token `table` to match the problem domain (a ping-pong game). It's a nice semantic that a player "yields the table" to the other when he hits the ball back, isn't it?
+Я назвал токен управления `table` в соответствии с проблемной областью (игра в настольный теннис). Это хорошая аналогия — игрок «отдает стол» другому, когда он отбивает мяч назад, не так ли?
 
-The `while` loop in `*referee()` just keeps yielding the `table` back to the players as long as his alarm on his stopwatch hasn't gone off. When it does, he takes over and declares the game over with `"Time's up!"`.
+Цикл `while` в `*referee()` просто продолжает отдавать стол игрокам, пока не вышло время на секундомере. Когда это происходит, он берёт управление и объявляет `"Время вышло!"`.
 
-Now, let's look at the `*player()` generator (which we use two instances of):
+Теперь взглянем на генератор `*player()` (мы используем два экземпляра этого генератора):
 
 ```js
 function *player(table) {
@@ -253,65 +254,67 @@ function *player(table) {
     var ball = table.messages[1];
 
     while (table.messages[2] !== "CLOSED") {
-        // hit the ball
+        // ударяет по мячу
         ball.hits++;
         message( name, ball.hits );
 
-        // artificial delay as ball goes back to other player
+        // искусственная задержка, когда мяч возвращается к другому игроку
         yield ASQ.after( 500 );
 
-        // game still going?
+        // игра всё ещё продолжается?
         if (table.messages[2] !== "CLOSED") {
-            // ball's now back in other player's court
+            // мяч снова вернулся на сторону другого игрока
             yield table;
         }
     }
 
-    message( name, "Game over!" );
+    message( name, "Игра окончена!" );
 }
 ```
 
-The first player takes his name off the first message's array (`"ping"`), then the second player takes his name (`"pong"`), so they can both identify themselves properly. Both players also keep a reference to the shared `ball` object (with its `hits` counter).
+Первый игрок берёт себе в качестве имени первый элемент из массива сообщений (`"ping"`), затем второй игрок берёт второй элемент. Таким образом, они оба корректно себя идентифицируют. Оба игрока также хранят ссылку на общий объект `ball` (со счётчиком `hits`).
 
-While the players haven't yet heard the closing message from the referee, they "hit" the `ball` by upping its `hits` counter (and outputting a message to announce it), then they wait for `500` ms (just to fake the ball *not* traveling at the speed of light!).
+Пока игроки не услышат финальное сообщение от судьи, они «ударяют» по мячу, увеличивая счетчик `hits` (и выдают сообщение, чтобы объявить об этом). Затем они ждут 500 мс (просто чтобы имитировать полёт мяча, который *не* может путешествовать со скоростью света!).
+
+Если игра всё ещё продолжается, они «отдают стол» другому игроку.
 
 If the game is still going, they then "yield the table" back to the other player.
 
-That's it!
+Это всё!
 
-[Take a look at the demo's code](http://jsbin.com/qutabu/1/edit?js,output) to get a complete in-context code listing to see all the pieces working together.
+[Взгляните на код демо](http://jsbin.com/qutabu/1/edit?js,output), чтобы понять весь код в контексте и увидеть, как все части работают вместе.
 
-## State Machine: Generator Coroutines
+## Конечный автомат: генераторы-сопрограммы
 
-One last example: defining a [state machine](http://en.wikipedia.org/wiki/Finite-state_machine) as a set of generator coroutines that are driven by a simple helper.
+Последний пример: создание [конечного автомата](http://en.wikipedia.org/wiki/Finite-state_machine) как набора генераторов-сопрограмм, которые управляются простым помощником.
 
-[Demo](http://jsbin.com/luron/1/edit?js,console) (note: use a very recent nightly of FF or Chrome, with ES6 JavaScript support, to see generators work)
+[Демо](http://jsbin.com/luron/1/edit?js,console).
 
-First, let's define a helper for controlling our finite state handlers:
+Сначала давайте определим помощника для управления обработчиками конечного состояния:
 
 ```js
 function state(val,handler) {
-    // make a coroutine handler (wrapper) for this state
+    // обработчик сопрограммы (обертка) для этого состояния
     return function*(token) {
-        // state transition handler
+        // обработчик перехода состояния
         function transition(to) {
             token.messages[0] = to;
         }
 
-        // default initial state (if none set yet)
+        // начальное состояние по умолчанию (если ещё не установлено)
         if (token.messages.length < 1) {
             token.messages[0] = val;
         }
 
-        // keep going until final state (false) is reached
+        // продолжать, пока не будет достигнуто конечное состояние (false)
         while (token.messages[0] !== false) {
-            // current state matches this handler?
+            // этот обработчик соответствует текущему состоянию?
             if (token.messages[0] === val) {
-                // delegate to state handler
+                // делегирует обработчику состояния
                 yield *handler( transition );
             }
 
-            // transfer control to another state handler?
+            // передать управление другому обработчику состояния?
             if (token.messages[0] !== false) {
                 yield token;
             }
@@ -320,83 +323,83 @@ function state(val,handler) {
 }
 ```
 
-This `state(..)` helper utility creates a [delegating-generator](https://davidwalsh.name/es6-generators-dive#delegating-generators) wrapper for a specific state value, which automatically runs the state machine, and transfers control at each state transition.
+Эта вспомогательная функция `state(...)` создаёт [делегирующий генератор](bonus/es6_generators_dive/README.md) для определённого значения состояния, который автоматически запускает конечный автомат и передаёт управление при каждом изменении состояния.
 
-Purely by convention, I've decided the shared `token.messages[0]` slot will hold the current state of our state machine. That means you can seed the initial state by passing in a message from the previous sequence step. But if no such initial message is passed along, we simply default to the first defined state as our initial state. Also, by convention, the final terminal state is assumed to be `false`. That's easy to change as you see fit.
+Исключительно по соглашению, я решил, что общий слот `token.messages[0]` будет содержать текущее состояние нашего конечного автомата. Это означает, что вы можете установить начальное состояние, передав сообщение с предыдущего шага последовательности. Но если такое начальное сообщение не передаётся, мы просто по умолчанию устанавливаем в качестве начального состояния первое состояние. Кроме того, по соглашению, значение `false` принято за финальное состояние, при котором конечный автомат завершает работу. Это легко изменить, если вы посчитаете нужным.
 
-State values can be whatever sort of value you'd like: numbers, strings, etc. As long as the value can be strict-tested for equality with a `===`, you can use it for your states.
+Значения состояния могут быть любыми, какими хотите: числами, строками и т. д. Если значение может быть строго проверено на равенство с помощью `===`, вы можете использовать его для своих состояний.
 
-In the following example, I show a state machine that transitions between four number value states, in this particular order: `1 -> 4 -> 3 -> 2`. For demo purposes only, it also uses a counter so that it can perform the transition loop more than once. When our generator state machine finally reaches the terminal state (`false`), the *asynquence* sequence moves onto the next step, just as you'd expect.
+В следующем примере я показываю конечный автомат, который переходит между четырьмя числовыми состояниями в определённом порядке: `1 -> 4 -> 3 -> 2`. Для демонстрационных целей здесь также используется счётчик, чтобы конечный автомат мог выполнить цикл перехода не более одного раза. Когда наш конечный автомат достигает состояния прерывания (`false`), последовательность *asyncquence* переходит на следующий шаг, как и ожидается.
 
 ```js
-// counter (for demo purposes only)
+// счётчик (исключительно для демонстрации)
 var counter = 0;
 
-ASQ( /* optional: initial state value */ )
+ASQ( /* необязательно: значение начального состояния */ )
 
-// run our state machine, transitions: 1 -> 4 -> 3 -> 2
+// запуск конечного автомата, переходы: 1 -> 4 -> 3 -> 2
 .runner(
 
-    // state `1` handler
+    // обработчик состояния `1`
     state( 1, function*(transition){
         console.log( "in state 1" );
-        yield ASQ.after( 1000 ); // pause state for 1s
-        yield transition( 4 ); // goto state `4`
+        yield ASQ.after( 1000 ); // пауза 1с
+        yield transition( 4 ); // переход к состоянию `4`
     } ),
 
-    // state `2` handler
+    // обработчик состояния `2`
     state( 2, function*(transition){
         console.log( "in state 2" );
-        yield ASQ.after( 1000 ); // pause state for 1s
+        yield ASQ.after( 1000 ); // пауза 1с
 
-        // for demo purposes only, keep going in a
-        // state loop?
+        // только для демонстрационных целей, 
+        // продолжайте движение по циклу состояний?
         if (++counter < 2) {
-            yield transition( 1 ); // goto state `1`
+            yield transition( 1 ); // переход к состоянию `1`
         }
-        // all done!
+        // всё сделано!
         else {
-            yield "That's all folks!";
-            yield transition( false ); // goto terminal state
+            yield "Это всё, люди!";
+            yield transition( false ); // переход к состоянию прерывания
         }
     } ),
 
-    // state `3` handler
+    // обработчик состояния `3`
     state( 3, function*(transition){
         console.log( "in state 3" );
-        yield ASQ.after( 1000 ); // pause state for 1s
-        yield transition( 2 ); // goto state `2`
+        yield ASQ.after( 1000 ); // пауза 1с
+        yield transition( 2 ); // переход к состоянию `2`
     } ),
 
-    // state `4` handler
+    // обработчик состояния `4`
     state( 4, function*(transition){
         console.log( "in state 4" );
-        yield ASQ.after( 1000 ); // pause state for 1s
-        yield transition( 3 ); // goto state `3`
+        yield ASQ.after( 1000 ); // пауза 1с
+        yield transition( 3 ); // переход к состоянию `3`
     } )
 
 )
 
-// state machine complete, so move on
+// конечный автомат завершён, двигаемся дальше
 .val(function(msg){
     console.log( msg );
 });
 ```
 
-Should be fairly easy to trace what's going on here.
+Довольно легко проследить, что здесь происходит.
 
-`yield ASQ.after(1000)` shows these generators can do any sort of promise/sequence based async work as necessary, as we've seen earlier. `yield transition(..)` is how we transition to a new state.
+Выражение `yield ASQ.after(1000)` показывает, что эти генераторы могут при необходимости выполнять любые асинхронные операции на основе промисов/последовательностей, как мы видели ранее. Выражение `yield transition(...)` осуществляет переход к новому состоянию.
 
-Our `state(..)` helper above actually does the *hard work* of handling the [yield* delegation](bonus/async_generators/README.md) and transition juggling, leaving our state handlers to be expressed in a very simple and natural fashion.
+Наш помощник `state(...)` на самом деле выполняет всю *тяжёлую работу* по обработке [делегирования yield*](bonus/async_generators/README.md) и жонглированию состояниями, поэтому обработчики состояния могут быть простыми и естественными.
 
-## Summary
+## Заключение
 
-The key to CSP is joining two or more generator "processes" together, giving them a shared communication channel, and a way to transfer control between each other.
+Ключ к CSP заключается в объединении двух или более «процессов» генераторов вместе, предоставляя им общий канал связи и способ передачи управления между собой.
 
-There are a number of libraries that have more-or-less taken a fairly formal approach in JS that matches Go and Clojure/ClojureScript APIs and/or semantics. All of these libraries have really smart developers behind them, and they all represent great resources for further investigation/exploration.
+Существует несколько библиотек, которые используют более или менее формальный подход в JS, который соответствует Go и Clojure/ClojureScript API и/или семантике. За всеми этими библиотеками стоят действительно умные разработчики, и все они представляют собой большие ресурсы для дальнейшего исследования.
 
-[asynquence](http://github.com/getify/asynquence) tries to take a somewhat less-formal approach while hopefully still preserving the main mechanics. If nothing else, *asynquence*'s `runner(..)` makes it pretty easy to start [playing around with CSP-like generators](https://github.com/getify/asynquence/tree/master/contrib#csp-style-concurrency) as you experiment and learn.
+Библиотека [asynquence](http://github.com/getify/asynquence) пытается использовать менее формальный подход, надеясь, тем не менее, сохранить основную механику. Плагин `runner(...)` из *asynquence* позволяет довольно легко начать играть с CSP-подобными генераторами, пока вы экспериментируете и учитесь.
 
-The best part though is that *asynquence* CSP works inline [with the rest of](https://davidwalsh.name/asynquence-part-1) its [other async capabilities](https://davidwalsh.name/asynquence-part-2) (promises, generators, flow control, etc). That way, you get the best of all worlds, and you can use whichever tools are appropriate for the task at hand, all in one small lib.
+Наилучшая часть состоит в том, что CSP в *asynquence* работают [вместе с остальными](https://davidwalsh.name/asynquence-part-1) её [асинхронными возможностями](https://davidwalsh.name/asynquence-part-2) (промисами, генераторами, потоком управления и т. д.). Таким образом, вы получаете лучшее из всех миров и можете использовать любые инструменты, подходящие для задачи, — всё в одной небольшой библиотеке.
 
-Now that we've explored generators in quite a bit of detail over these last four posts, my hope is that you're excited and inspired to explore how you can revolutionize your own async JS code! What will you build with generators?
+Теперь, когда мы довольно подробно изучили генераторы по этим четырём постам, я надеюсь, что вы взволнованы и вдохновлены исследовать, как вы можете преобразовать свой собственный асинхронный JS-код! Что вы будете разрабатывать с помощью генераторов?
