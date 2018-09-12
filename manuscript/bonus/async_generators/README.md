@@ -1,36 +1,36 @@
-# Going Async With ES6 Generators
+# Асинхронность с генераторами ES6
 
 *Перевод статьи Kyle Simpson: [Going Async With ES6 Generators](https://davidwalsh.name/async-generators)*
 
 *Дата публикации: 03.08.2014*
 
-## ES6 Generators: Complete Series
+## Генераторы ES6: Полная серия
 
-1. [The Basics Of ES6 Generators](bonus/es6_generators_basic/README.md)
-2. [Diving Deeper With ES6 Generators](bonus/es6_generators_dive/README.md)
-3. [Going Async With ES6 Generators](bonus/async_generators/README.md)
-4. [Getting Concurrent With ES6 Generators](bonus/concurrent_generators/README.md)
+1. [Основы генераторов ES6](bonus/es6_generators_basic/README.md)
+2. [Глубокое погружение в генераторы ES6](bonus/es6_generators_dive/README.md)
+3. [Асинхронность с генераторами ES6](bonus/async_generators/README.md)
+4. [Параллелизм с генераторами ES6](bonus/concurrent_generators/README.md)
 
-Now that you've [seen ES6 generators](bonus/es6_generators_basic/README.md) and are [more comfortable](bonus/es6_generators_dive/README.md) with them, it's time to really put them to use for improving our real-world code.
+Теперь, когда вы знакомы с [основами генераторов ES6](bonus/es6_generators_basic/README.md) и [освоились с ними](bonus/es6_generators_dive/README.md), пришло время использовать для улучшения наше кода в реальной жизни.
 
-The main strength of generators is that they provide a single-threaded, synchronous-looking code style, **while allowing you to hide the asynchronicity away as an implementation detail**. This lets us express in a very natural way what the flow of our program's steps/statements is without simultaneously having to navigate asynchronous syntax and gotchas.
+Основная сила генераторов заключается в том, что они обеспечивают однопоточный синхронный стиль кода, **позволяя скрыть асинхронность как деталь реализации**. Это даёт нам возможность очень естественным образом выразить последовательность шагов/инструкций нашей программы без использования асинхронного синтаксиса и подводных камней.
 
-In other words, we achieve a nice **separation of capabilities/concerns**, by splitting up the consumption of values (our generator logic) from the implementation detail of asynchronously fulfilling those values (the `next(..)` of the generator's iterator).
+Другими словами, мы достигаем прекрасного **разделения ответственности** с помощью отделения потребления значений (логика генератора) от реализации асинхронного получения этих значений (метод `next(...)` итератора).
 
-The result? All the power of asynchronous code, with all the ease of reading and maintainability of synchronous(-looking) code.
+А что получаем в результате? Всю мощь асинхронного кода со всей простотой чтения и поддержки синхронного кода.
 
-So how do we accomplish this feat?
+Итак, как нам достичь этого успеха?
 
-## Simplest Async
+## Простейшая асинхронная функция
 
-At its most simple, generators don't need anything *extra* to handle async capabilities that your program doesn't already have.
+В самом простом генераторе не требуется ничего *дополнительного* для обработки асинхронных возможностей.
 
-For example, let's imagine you have this code already:
+Например, давайте представим, что у вас уже есть этот код:
 
 ```js
 function makeAjaxCall(url,cb) {
-    // do some ajax fun
-    // call `cb(result)` when complete
+    // делаем какой-нибудь ajax-запрос
+    // вызываем `cb(result)` после завершения
 }
 
 makeAjaxCall( "http://some.url.1", function(result1){
@@ -38,23 +38,22 @@ makeAjaxCall( "http://some.url.1", function(result1){
 
     makeAjaxCall( "http://some.url.2/?id=" + data.id, function(result2){
         var resp = JSON.parse( result2 );
-        console.log( "The value you asked for: " + resp.value );
+        console.log( "Значение, которое вы запрашивали: " + resp.value );
     });
 } );
 ```
 
-To use a generator (without any additional decoration) to express this same program, here's how you do it:
+Вот как можно сделать то же самое с использованием генератора (без дополнительного декорирования):
 
 ```js
 function request(url) {
-    // this is where we're hiding the asynchronicity,
-    // away from the main code of our generator
-    // `it.next(..)` is the generator's iterator-resume
-    // call
+    // здесь мы прячем асинхронность,
+    // убирая её из основного кода нашего генератора
+    // вызов `it.next(..)` возобновляет генератор
     makeAjaxCall( url, function(response){
         it.next( response );
     } );
-    // Note: nothing returned here!
+    // Внимание: здесь ничего не возвращается!
 }
 
 function *main() {
@@ -63,42 +62,42 @@ function *main() {
 
     var result2 = yield request( "http://some.url.2?id=" + data.id );
     var resp = JSON.parse( result2 );
-    console.log( "The value you asked for: " + resp.value );
+    console.log( "Значение, которое вы запрашивали: " + resp.value );
 }
 
 var it = main();
-it.next(); // get it all started
+it.next(); // здесь всё начинается
 ```
 
-Let's examine how this works.
+Давайте разберёмся, как это работает.
 
-The `request(..)` helper basically wraps our normal `makeAjaxCall(..)` utility to make sure its callback invokes the generator iterator's `next(..)` method.
+Вспомогательная функция `request(...)` оборачивает `makeAjaxCall(...)`, чтобы убедиться, что в колбэке вызывается метод `next(...)` итератора.
 
-With the `request("..")` call, you'll notice it has *no return value* (in other words, it's `undefined`). This is no big deal, but it's something important to contrast with how we approach things later in this article: we effectively `yield undefined` here.
+Как вы можете заметить, вызов `request("...")` *не возвращает значения* (другими словами, он возвращает значение `undefined`). Здесь этот момент не существеннен, но на него стоит обратить внимание, так как мы вернёмся к этому позже: мы получаем здесь `yield undefined`.
 
-So then we call `yield ..` (with that `undefined` value), which essentially does nothing but pause our generator at that point. It's going to wait until the `it.next(..)` call is made to resume, which we've queued up (as the callback) to happen after our Ajax call finishes.
+Далее мы вызываем выражение `yield ...` (со значением `undefined`), которое не делает ничего, только приостанавливает наш генератор в этой точке. Генератор будет ждать, пока не возобновится с помощью метода `it.next(...)`, который мы поставили в очередь (как колбэк) после завершения нашего ajax-запроса. 
 
-But what happens to the *result* of the `yield ..` expression? We assign that to the variable `result1`. How does that have the result of the first Ajax call in it?
+А что происходит с *результатом* выражения `yield ...`? Мы присваиваем его переменной `result1`. Как мы здесь получим результат ajax-запроса?
 
-Because when `it.next(..)` is called as the Ajax callback, it's passing the Ajax response to it, which means that value is getting sent back into our generator at the point where it's currently paused, which is in the middle of the `result1 = yield ..` statement!
+Поскольку метод `it.next()` вызывается в колбэке, колбэк передаёт в него ответ ajax-запроса. Это значит, что результат ajax-запроса будет передан обратно в генератор в ту точку, где он был приостановлен, а именно в выражение `result1 = yield ...`!
 
-That's really cool and super powerful. In essence, `result1 = yield request(..)` is **asking for the value**, but it's (almost!) completely hidden from us -- at least us not needing to worry about it here -- that the implementation under the covers causes this step to be asynchronous. It accomplishes that asynchronicity by hiding the pause capability in yield, and separating out the resume capability of the generator to another function, so that our main code is just making a **synchronous(-looking) value request**.
+Это действительно круто и супер мощно. В сущности, `result1 = yield request(...)` **запрашивает значение**, но от нас (почти!) полностью скрыто — по крайне мере здесь об этом не нужно беспокоиться — что реализация под капотом делает это асинхронно. Асинхронность скрыта за возможностью `yield` приостанавливать выполнение и возобновлять его из другой функции, поэтому наш код делает **(как бы) синхронный запрос**.
 
-The exact same goes for the second `result2 = yield result(..)` statement: it transparently pauses & resumes, and gives us the value we asked for, all without bothering us about any details of asynchronicity at that point in our coding.
+В точности то же самое происходит со вторым выражением `result2 = yield result(...)`: оно прозрачно приостанавливает и возобновляет выполнение, отдаёт значение, которое мы запрашиваем, при этом в этой точке не нужно беспокоиться ни о каких деталях асинхронности.
 
-Of course, `yield` is present, so there is a subtle hint that something magical (aka async) *may occur* at that point. But `yield` is a pretty minor syntactic signal/overhead compared to the hellish nightmares of nested callbacks (or even the API overhead of promise chains!).
+Конечно, здесь присутствует `yield`, который тонко намекает, что в этот момент *может произойти* что-то волшебное (например, асинхронный вызов). Но `yield` — это довольно незначительный синтаксический сигнал/накладные расходы по сравнению с адскими кошмарами вложенных колбэков (или даже накладными расходами цепочки обещаний!).
 
-Notice also that I said "may occur". That's a pretty powerful thing in and of itself. The program above always makes an async Ajax call, but **what if it didn't?** What if we later changed our program to have an in-memory cache of previous (or prefetched) Ajax responses? Or some other complexity in our application's URL router could in some cases fulfill an Ajax request *right away*, without needing to actually go fetch it from a server?
+Заметьте также, что я сказал, «может произойти». Это очень мощная вещь сама по себе. Код выше всегда делает асинхронный ajax-вызов, но **что, если это не так?** Что делать, если позже мы изменили нашу программу, добавили кэширование предыдущих ответов? Или какой-то параметр в URL-адресе нашего приложения может в некоторых случаях выполнить ajax-запрос сразу, без необходимости фактически получать ответ с сервера?
 
-We could change the implementation of `request(..)` to something like this:
-
+Мы можем изменить реализацию `request(...)` так:
+s
 ```js
 var cache = {};
 
 function request(url) {
     if (cache[url]) {
-        // "defer" cached response long enough for current
-        // execution thread to complete
+        // "отложить" кэшированный ответ достаточно долго
+        // чтобы завершить текущий поток выполнения
         setTimeout( function(){
             it.next( cache[url] );
         }, 0 );
@@ -112,9 +111,9 @@ function request(url) {
 }
 ```
 
-**Note:** A subtle, tricky detail here is the need for the `setTimeout(..0)` deferral in the case where the cache has the result already. If we had just called `it.next(..)` right away, it would have created an error, because (and this is the tricky part) the generator is not technically in a paused state *yet*. Our function call `request(..)` is being fully evaluated *first*, and then the `yield` pauses. So, we can't call `it.next(..)` again yet immediately inside `request(..)`, because at that exact moment the generator is still running (`yield` hasn't been processed). But we *can* call `it.next(..) "later", immediately after the current thread of execution is complete, which our `setTimeout(..0)` "hack" accomplishes. **We'll have a much nicer answer for this down below.**
+**Примечание:** тонкая, сложная деталь здесь — необходимость отсрочки `setTimeout (... 0)` в случае, когда в кэше уже есть результат. Если мы просто вызовем `it.next(...)`, это приведёт к ошибке, поскольку (и это тонкая часть) технически в этот момент генератор ещё не приостановлен. Сначала будет полностью выполнена функция `request(...)`, а затем `yield` приостановит выполнение генератора. Поэтому мы не можем вызвать `request(...)`, пока генератор всё ещё запущен (`yield` не был обработан). Но мы можем вызвать `it.next(...)` «позже», непосредственно после того, как завершится текущий поток выполнения, с помощью «хака» с `setTimeout(...0)`. **У нас будет более приятное решение для этого ниже.**
 
-Now, our main generator code still looks like:
+Теперь наш код генератора выглядит так:
 
 ```js
 var result1 = yield request( "http://some.url.1" );
@@ -122,64 +121,64 @@ var data = JSON.parse( result1 );
 ..
 ```
 
-**See!?** Our generator logic (aka our *flow control*) didn't have to change **at all** from the non-cache-enabled version above.
+**Видите?!** Логика генератора (или наш *поток управления*) не изменилась **совсем** по сравнению с версией без кэширования выше.
 
-The code in `*main()` still just asks for a value, and *pauses* until it gets it back before moving on. In our current scenario, that "pause" could be relatively long (making an actual server request, to perhaps 300-800ms) or it could be almost immediate (the `setTimeout(..0)` deferral hack). But our flow control doesn't care.
+Код в генераторе `*main()` по-прежнему запрашивает значение и останавливается, пока не получит результат. В нашем текущем сценарии, эта «пауза» может быть относительно долгой (делается фактический запрос на сервер, возможно, 300-800 мс) или почти мгновенной (отсрочка с использованием `setTimeout(...0)`). Но для нашего потока управления это не имеет значения.
 
-That's the real power of **abstracting away asynchronicity as an implementation detail**.
+В этом заключается настоящая мощь **абстрагирования асинхронности как детали реализации**.
 
-## Better Async
+## Улучшенная асинхронная функция
 
-The above approach is quite fine for simple async generators work. But it will quickly become limiting, so we'll need a more powerful async mechanism to pair with our generators, that's capable of handling a lot more of the heavy lifting. That mechanism? **Promises**.
+Описанный выше подход достаточно хорош для простых асинхронных генераторов. Но он быстро достигнет своего предела, поэтому нам понадобится более мощный механизм асинхронного взаимодействия с нашими генераторами, который способен выполнять намного больше тяжелой работы. Какой механизм? **Промисы**.
 
-If you're still a little fuzzy on ES6 Promises, I wrote an extensive [5-part blog post series](http://blog.getify.com/promises-part-1/) all about them. Go take a read. I'll *wait* for you to come back. &lt;chuckle, chuckle&gt;. Subtle, corny async jokes ftw!
+Если вы не до конца чётко понимаете промисы ES6, я написал о них расширенную [серию из 5 постов](http://blog.getify.com/promises-part-1/). Сходите почитайте. Я буду *ждать*, пока вы не вернётесь. Ха-ха. Тонкая, банальная шутка об асинхронности! 
 
-The earlier Ajax code examples here suffer from all the same [Inversion of Control](http://blog.getify.com/promises-part-2/) issues (aka "callback hell") as our initial nested-callback example. Some observations of where things are lacking for us so far:
+Примеры кода с ajax-запросами, которые мы рассматривали ранее, страдают от проблем [инверсии управления](http://blog.getify.com/promises-part-2/) (или «callback hell»/«ад колбэков»). Вот некоторые наблюдения о том, чего нам до сих пор не хватает:
 
-1. There's no clear path for error handling. As we [learned in the previous post](bonus/es6_generators_dive), we *could) have detected an error with the Ajax call (somehow), passed it back to our generator with `it.throw(..)`, and then used `try..catch` in our generator logic to handle it. But that's just more manual work to wire up in the "back-end" (the code handling our generator iterator), and it may not be code we can re-use if we're doing lots of generators in our program.
-2. If the `makeAjaxCall(..)` utility isn't under our control, and it happens to call the callback multiple times, or signal both success and error simultaneously, etc, then our generator will go haywire (uncaught errors, unexpected values, etc). Handling and preventing such issues is lots of repetitive manual work, also possibly not portable.
-3. Often times we need to do more than one *task* "in parallel" (like two simultaneous Ajax calls, for instance). Since generator `yield` statements are each a single pause point, two or more cannot run at the same time -- they have to run one-at-a-time, in order. So, it's not very clear how to fire off multiple tasks at a single generator `yield` point, without wiring up lots of manual code under the covers.
+1. Нет чёткого способа обработки ошибок. Как мы [узнали из предыдущего поста](bonus/es6_generators_dive), мы *могли бы* обнаружить ошибку в ajax-вызове (каким-то образом) и передать её обратно в генератор с помощью `it.throw(...)`, а затем использовать `try...catch` в генераторе для обработки этой ошибки. Но в данном случае придётся проделать много ручной работы, и возможно, этот код нельзя будет переиспользовать, если мы создадим много генераторов в нашей программе.
+2. Если утилита `makeAjaxCall(...)` не находится под нашим контролем, и иногда вызывает колбэк несколько раз или одновременно сигнализирует об успехе и об ошибке, то наш генератор будет работать с ошибками (непойманные ошибки, некорректные значения и т. д.). Обработка и предотвращение таких проблем — много повторяющейся ручной работы.
+3. Часто нам приходится выполнять несколько *задач* «параллельно» (например, два одновременных ajax-запроса). Поскольку каждое выражение `yield` в генераторе представляет собой одну точку паузы, два или более запроса не могут запускаться одновременно — они должны запускаться по очереди, по порядку. Таким образом, не совсем ясно, как запустить несколько задач в одной точке `yield` генератора, не делая под капотом много дополнительной работы.
 
-As you can see, all of these problems are *solvable*, but who really wants to reinvent these solutions every time. We need a more powerful pattern that's designed specifically as a [trustable, reusable solution](http://blog.getify.com/promises-part-3/) for our generator-based async coding.
+Как вы можете видеть, все эти проблемы *решаемы*, но кто действительно хочет каждый раз изобретать эти решения. Нам нужен более мощный шаблон, разработанный специально как [надежное, многоразовое решение](http://blog.getify.com/promises-part-3/) для асинхронного кода на основе генераторов.
 
-That pattern? **yielding out promises**, and letting them resume the generator when they fulfill.
+Какой шаблон? **Отдавать промисы с помощью yield** и позволить им возобновить генератор, когда они успешно выполнятся.
 
-Recall above that we did `yield request(..)`, and that the `request(..)` utility didn't have any return value, so it was effectively just `yield undefined`?
+Помните, что выше мы вызывали `yield request(...)`, а вспомогательная функция `request(...)` не имела возвращаемого значения, т.е. фактически это было выражение `yield undefined`?
 
-Let's adjust that a little bit. Let's change our `request(..)` utility to be promises-based, so that it returns a promise, and thus what we `yield` out **is actually a promise** (and not `undefined`).
+Давайте это немного подкорректируем. Изменим нашу функцию `request(...)` так, чтобы она возвращала промис, таким образом мы будем **отдавать в генераторе промис** (а не `undefined`).
 
 ```js
 function request(url) {
-    // Note: returning a promise now!
+    // Внимание: сейчас возвращается промис!
     return new Promise( function(resolve,reject){
         makeAjaxCall( url, resolve );
     } );
 }
 ```
 
-`request(..)` now constructs a promise that will be resolved when the Ajax call finishes, and we return that promise, so that it can be `yield`ed out. What next?
+Теперь функция `request(...)` создаёт промис, который будет выполнен, когда завершится ajax-запрос. Этот промис отдаётся генератором. Что дальше?
 
-We'll need a utility that controls our generator's iterator, that will receive those `yield`ed promises and wire them up to resume the generator (via `next(..)`). I'll call this utility `runGenerator(..)` for now:
+Нам нужна вспомогательная функция, которая управляет итератором генератора. Она будет получать отданные промисы и возобновлять генератор. Я назову эту вспомогательную функцию `runGenerator(...)`:
 
 ```js
-// run (async) a generator to completion
-// Note: simplified approach: no error handling here
+// (асинхронный) запуск генератора при завершении
+// Внимание: упрощённый подход - здесь нет обработки ошибок
 function runGenerator(g) {
     var it = g(), ret;
 
-    // asynchronously iterate over generator
+    // асинхронная итерация по генератору
     (function iterate(val){
         ret = it.next( val );
 
         if (!ret.done) {
-            // poor man's "is it a promise?" test
+            // проверка "это промис?"
             if ("then" in ret.value) {
-                // wait on the promise
+                // ждём завершения промиса
                 ret.value.then( iterate );
             }
-            // immediate value: just send right back in
+            // непосредственное значение: просто отправляем его обратно
             else {
-                // avoid synchronous recursion
+                // избегаем синхронной рекурсии
                 setTimeout( function(){
                     iterate( ret.value );
                 }, 0 );
@@ -189,13 +188,13 @@ function runGenerator(g) {
 }
 ```
 
-Key things to notice:
+Ключевые моменты, на которые следует обратить внимание:
 
-1. We automatically initialize the generator (creating its `it` iterator), and we asynchronously will run `it` to completion (`done:true`).
-2. We look for a promise to be `yield`ed out (aka the return `value` from each `it.next(..)` call). If so, we wait for it to complete by registering `then(..)` on the promise.
-3. If any immediate (aka non-promise) value is returned out, we simply send that value back into the generator so it keeps going immediately.
+1. Мы автоматически инициализируем генератор (создаем его итератор `it`) и асинхронно запускаем его до завершения (`done: true`).
+2. Мы проверяем, что генератор отдаёт промис (возвращаемое значение из каждого метода `it.next(...)`). Если так, мы регистрируем обработчик `then(...)` промиса и ждём его завершения.
+3. Если генератор сразу отдаёт значение (а не промис), мы просто отправляем его обратно в генератор, чтобы он немедленно возобновился.
 
-Now, how do we use it?
+Как мы теперь будем это использовать?
 
 ```js
 runGenerator( function *main(){
@@ -204,29 +203,29 @@ runGenerator( function *main(){
 
     var result2 = yield request( "http://some.url.2?id=" + data.id );
     var resp = JSON.parse( result2 );
-    console.log( "The value you asked for: " + resp.value );
+    console.log( "Значение, которое вы запрашивали: " + resp.value );
 } );
 ```
 
-Bam! Wait... that's the **exact same generator code as earlier?** Yep. Again, this is the power of generators being shown off. The fact that we're now creating promises, `yield`ing them out, and resuming the generator on their completion -- **ALL OF THAT IS "HIDDEN" IMPLEMENTATION DETAIL!** It's not really hidden, it's just separated from the consumption code (our flow control in our generator).
+Бам! Подождите... это же **тот самый код генератора, который мы использовали ранее?** Да. И снова, в этом проявляется мощность генераторов. Тот факт, что мы теперь создаём промис, отдаём его наружу и возобновляем генератор, когда промис выполнится — **ВСЁ ЭТО «СКРЫТЫЕ» ДЕТАЛИ РЕАЛИЗАЦИИ!** На самом деле не скрытые, просто отделены от кода, который использует значения (от потока управления в генераторе).
 
-By waiting on the `yield`ed out promise, and then sending its completion value back into `it.next(..)`, the `result1 = yield request(..)` gets the value exactly as it did before.
+Мы отдаём промис из генератора, а потом посылаем обратно его значение, когда он завершится, поэтому `result1 = yield request(...)` как и раньше получает значение.
 
-But now that we're using promises for managing the async part of the generator's code, we solve all the inversion/trust issues from callback-only coding approaches. We get all these solutions to our above issues for "free" by using generators + promises:
+Но теперь мы используем промисы для управления асинхронной частью кода генератора, мы решаем все проблемы инверсии управления, которые были в подходе на основе колбэков. Используя генераторы + промисы, мы получаем решение всех перечисленных выше проблем «бесплатно»:
 
-1. We now have built-in error handling which is easy to wire up. We didn't show it above in our `runGenerator(..)`, but it's not hard at all to listen for errors from a promise, and wire them to `it.throw(..)` -- then we can use `try..catch` in our generator code to catch and handle errors.
-2. We get all the [control/trustability](http://blog.getify.com/promises-part-2/#uninversion) that promises offer. No worries, no fuss.
-3. Promises have lots of powerful abstractions on top of them that automatically handle the complexities of multiple "parallel" tasks, etc. For example, `yield Promise.all([ .. ])` would take an array of promises for "parallel" tasks, and `yield` out a single promise (for the generator to handle), which waits on all of the sub-promises to complete (in whichever order) before proceeding. What you'd get back from the `yield` expression (when the promise finishes) is an array of all the sub-promise responses, in order of how they were requested (so it's predictable regardless of completion order).
+1. Теперь у нас есть встроенный механизм обработки ошибок, который просто подключить. Мы не показали этого в функции `runGenerator(...)` выше, но это не сложно — слушать все ошибки промиса и передавать их обратно с помощью `it.throw(...)`. Тогда мы можем использовать `try...catch` в генераторе, чтобы отловить и обработать эти ошибки.
+2. Мы получаем весь [контроль/доверие](http://blog.getify.com/promises-part-2/#uninversion), которые предлагают промисы. Не беспокойства, не суеты.
+3. У промисов есть много мощных абстракций, которые автоматически обрабатывают сложности нескольких «параллельных» задач и т. д. Например, `yield Promise.all([ ... ])` берёт массив промисов для «параллельных» задач и отдаёт его как один промис, который ждёт выполнения всех дочерних промисов (в произвольном порядке), прежде чем продолжить выполнение. Результатом выражения `yield` будет массив результатов всех дочерних промисов, в том порядке, в котором они были запрошены (независимо от порядка завершения).
 
-First, let's explore error handling:
+Во-первых, рассмотрим обработку ошибок:
 
 ```js
-// assume: `makeAjaxCall(..)` now expects an "error-first style" callback (omitted for brevity)
-// assume: `runGenerator(..)` now also handles error handling (omitted for brevity)
+// предположение: `makeAjaxCall(...)` ожидает колбэк в стиле "error-first"/"сначала ошибка" (опущен для краткости)
+// предположение: `runGenerator(..)` теперь также обрабатывает ошибки (опущено для краткости)
 
 function request(url) {
     return new Promise( function(resolve,reject){
-        // pass an error-first style callback
+        // передаём колбэк в стиле error-first
         makeAjaxCall( url, function(err,text){
             if (err) reject( err );
             else resolve( text );
@@ -239,7 +238,7 @@ runGenerator( function *main(){
         var result1 = yield request( "http://some.url.1" );
     }
     catch (err) {
-        console.log( "Error: " + err );
+        console.log( "Ошибка: " + err );
         return;
     }
     var data = JSON.parse( result1 );
@@ -247,31 +246,31 @@ runGenerator( function *main(){
     try {
         var result2 = yield request( "http://some.url.2?id=" + data.id );
     } catch (err) {
-        console.log( "Error: " + err );
+        console.log( "Ошибка: " + err );
         return;
     }
     var resp = JSON.parse( result2 );
-    console.log( "The value you asked for: " + resp.value );
+    console.log( "Значение, которое вы запрашивали " + resp.value );
 } );
 ```
 
-If a promise rejection (or any other kind of error/exception) happens while the URL fetching is happening, the promise rejection will be mapped to a generator error (using the -- not shown -- `it.throw(..)` in `runGenerator(..)`), which will be caught by the `try..catch` statements.
+Если промис завершится неуспешно (или произойдёт любая другая ошибка/исключение), неудача промиса превратится в ошибку генератора (здесь не показано — с помощью `it.throw(...)` в генераторе), которая будет обработана конструкцией `try...catch`.
 
-Now, let's see a more complex example that uses promises for managing even more async complexity:
+Теперь давайте рассмотрим более сложный пример, который использует промисы для управления ещё более сложной асинхронной логикой:
 
 ```js
 function request(url) {
     return new Promise( function(resolve,reject){
         makeAjaxCall( url, resolve );
     } )
-    // do some post-processing on the returned text
+    // делаем некоторую пост-обработку возвращаемого текста
     .then( function(text){
-        // did we just get a (redirect) URL back?
+        // мы только что получили URL (перенаправление)?
         if (/^https?:\/\/.+/.test( text )) {
-            // make another sub-request to the new URL
+            // делаем другой подзапрос по новому URL
             return request( text );
         }
-        // otherwise, assume text is what we expected to get back
+        // иначе предположим, что текст - это то, что мы ожидали
         else {
             return text;
         }
@@ -294,95 +293,95 @@ runGenerator( function *main(){
 } );
 ```
 
-`Promise.all([ .. ])` constructs a promise that's waiting on the three sub-promises, and it's that main promise that's `yield`ed out for the `runGenerator(..)` utility to listen to for generator resumption. The sub-promises can receive a response that looks like another URL to redirect to, and chain off another sub-request promise to the new location. To learn more about promise chaining, [read this article section](http://blog.getify.com/promises-part-5/#the-chains-that-bind-us).
+`Promise.all([...])` создаёт промис, который ждёт три дочерних промиса, и отдаёт этот главный промис в функцию `runGenerator(...)`. Вложенные промисы могут получить ответ в виде другого URL и добавить новый промис в цепочку. [Прочитайте этот раздел в статье](http://blog.getify.com/promises-part-5/#the-chains-that-bind-us), чтобы узнать больше о цепочках промисов.
 
-Any kind of capability/complexity that promises can handle with asynchronicity, you can gain the sync-looking code benefits by using generators that `yield` out promises (of promises of promises of ...). **It's the best of both worlds.**
+Любая сложность асинхронности, с которой могут справиться промисы, вы можете выразить синхронно с помощью генераторов, отдающих промисы (или промисы промисов и т.д.). **Это лучшее из обоих миров.**
 
-## runGenerator(..): Library Utility
+## runGenerator(..): вспомогательные библиотеки
 
-We had to define our own `runGenerator(..)` utility above to enable and smooth out this generator+promise awesomeness. We even omitted (for brevity sake) the full implementation of such a utility, as there's more nuance details related to error-handling to deal with.
+Мы написали собственную утилиту `runGenerator(...)`, чтобы включить связку генератор + промис. Мы даже опустили (ради краткости) полную реализацию этой утилиты, так как есть нюансы, связанные с обработкой ошибок.
 
-But, you don't want to write your own `runGenerator(..)` do you?
+Но вы ведь не хотите писать свой собственную функцию `runGenerator(...)`, не так ли?
 
-I didn't think so.
+Я так и думал.
 
-A variety of promise/async libs provide just such a utility. I won't cover them here, but you can take a look at `Q.spawn(..)`, the `co(..)` lib, etc.
+Есть несколько разнообразных библиотек, которые предоставляют именно такую функцию. Я не буду их освещать, но вы можете взглянуть на `Q.spawn(...)`, `co(...)` и т. д.
 
-I will however briefly cover my own library's utility: [asynquence's runner(..) plugin](http://github.com/getify/asynquence), as I think it offers some unique capabilities over the others out there. I wrote an [in-depth 2-part blog post series on asynquence](https://davidwalsh.name/asynquence-part-1/) if you're interested in learning more than the brief exploration here.
+Однако я кратко расскажу об утилите из моей собственной библиотеки: [плагин `runner(...)` из asynquence](http://github.com/getify/asynquence), так как я думаю, что он предлагает некоторые уникальные возможности по сравнению с остальными. Я написал [углубленную серию статей из 2-х частей об asynquence](https://davidwalsh.name/asynquence-part-1/), если вам интересно узнать больше, чем краткое объяснение здесь. 
 
-First off, *asynquence* provides utilities for automatically handling the "error-first style" callbacks from the above snippets:
+Во-первых, *asynquence* предоставляет утилиты для автоматической обработки колбэков из приведенных выше фрагментов в стиле «error-first»:
 
 ```js
 function request(url) {
     return ASQ( function(done){
-        // pass an error-first style callback
+        // передаём здесь колбэк в стиле error-first
         makeAjaxCall( url, done.errfcb );
     } );
 }
 ```
 
-That's **much nicer**, isn't it!?
+Так **намного лучше**, не так ли!?
 
-Next, *asynquence*'s `runner(..)` plugin consumes a generator right in the middle of an *asynquence* sequence (asynchronous series of steps), so you can pass message(s) in from the preceding step, and your generator can pass message(s) out, onto the next step, and all errors automatically propagate as you'd expect:
+Далее, плагин `runner(...)` использует генератор прямо в середине последовательности *asynquence* (асинхронной серии шагов), поэтому вы можете передавать сообщение(-я) с предыдущего шага, а ваш генератор может передавать сообщение(-я) на следующий шаг, и все ошибки автоматически распространяются так, как вы ожидали:
 
 ```js
-// first call `getSomeValues()` which produces a sequence/promise,
-// then chain off that sequence for more async steps
+// сначала вызываем функцию `getSomeValues()`, создающую последовательность/промис,
+// затем подключаем к последовательности больше асинхронных шагов
 getSomeValues()
 
-// now use a generator to process the retrieved values
+// теперь используем генератор для обработки полученных значений
 .runner( function*(token){
-    // token.messages will be prefilled with any messages
-    // from the previous step
+    // token.messages будет заполняться любыми сообщениями
+    // с предыдущего шага
     var value1 = token.messages[0];
     var value2 = token.messages[1];
     var value3 = token.messages[2];
 
-    // make all 3 Ajax requests in parallel, wait for
-    // all of them to finish (in whatever order)
-    // Note: `ASQ().all(..)` is like `Promise.all(..)`
+    // делаем три параллельных ajax-запроса, дожидаемся
+    // их завершения (в любом порядке)
+    // Примечание: `ASQ().all(..)` - это как `Promise.all(..)`
     var msgs = yield ASQ().all(
         request( "http://some.url.1?v=" + value1 ),
         request( "http://some.url.2?v=" + value2 ),
         request( "http://some.url.3?v=" + value3 )
     );
 
-    // send this message onto the next step
+    // отправляем сообщение на следующий шаг
     yield (msgs[0] + msgs[1] + msgs[2]);
 } )
 
-// now, send the final result of previous generator
-// off to another request
+// отправляем окончательный результат предыдущего генератора
+// на следующий запрос
 .seq( function(msg){
     return request( "http://some.url.4?msg=" + msg );
 } )
 
-// now we're finally all done!
+// теперь мы наконец закончили!
 .val( function(result){
-    console.log( result ); // success, all done!
+    console.log( result ); // всё выполнено успешно!
 } )
 
-// or, we had some error!
+// или у нас была какая-то ошибка!
 .or( function(err) {
     console.log( "Error: " + err );
 } );
 ```
 
-The *asynquence* `runner(..)` utility receives (optional) messages to start the generator, which come from the previous step of the sequence, and are accessible in the generator in the `token.messages` array.
+Утилита `runner(...)` получает (необязательные) сообщения для запуска генератора, которые исходят из предыдущего шага последовательности и доступны в генераторе в массиве `token.messages`.
 
-Then, similar to what we demonstrated above with the `runGenerator(..)` utility, `runner(..)` listens for either a `yield`ed promise or `yield`ed *asynquence* sequence (in this case, an `ASQ().all(..)` sequence of "parallel" steps), and waits for *it* to complete before resuming the generator.
+Затем, подобно тому, что мы продемонстрировали выше с помощью функции `runGenerator(...)`, `runner(...)` прослушивает либо полученный промис, либо полученную последовательность *asynquence* (в данном случае последовательность `ASQ().all(...)` «параллельных» шагов) и ждёт, пока он завершит работу для возобновления генератора.
 
-When the generator finishes, the final value it `yield`s out passes along to the next step in the sequence.
+Когда генератор завершается, окончательное значение, которое он отдаёт, передаётся на следующий шаг последовательности.
 
-Moreover, if any error happens anywhere in this sequence, even inside the generator, it will bubble out to the single `or(..)` error handler registered.
+Более того, если какая-либо ошибка произойдёт в любом месте этой последовательности, даже внутри генератора, она распространится до зарегистрированного с помощью `or(...)` обработчика ошибки.
 
-*asynquence* tries to make mixing and matching promises and generators as dead-simple as it could possibly be. You have the freedom to wire up any generator flows alongside promise-based sequence step flows, as you see fit.
+*asynquence* пытается сделать связь промисов и генераторов настолько прочной, насколько это возможно. У вас есть свобода подключать любые потоки генератора наряду с потоками последовательности на основе промисов, какие вы сочтёте нужным.
 
-## ES7 async
+## Асинхронные функции ES7
 
-There is a proposal for the ES7 timeline, which looks fairly likely to be accepted, to create still yet another kind of function: an `async function`, which is like a generator that's automatically wrapped in a utility like `runGenerator(..)` (or *asynquence*'s' `runner(..)`). That way, you can send out promises and the `async function` automatically wires them up to resume itself on completion (no need even for messing around with iterators!).
+Существует предложение для ES7, которое скорее всего будет принято, добавляющее новый тип функций: асинхронные функции. Такая функция выглядит как генератор, автоматически обёрнутый в утилиту вроде `runGenerator(...)` (или `runner(...)` из *asynquence*). Таким образом, вы можете посылать промис, а асинхронная функция автоматически свяжется с ним, чтобы продолжить своё выполнение после завершения промиса (даже нет необходимости возиться с итераторами!).
 
-It will probably look something like this:
+Вероятно, это будет выглядеть так:
 
 ```js
 async function main() {
@@ -397,23 +396,22 @@ async function main() {
 main();
 ```
 
-As you can see, an `async function` can be called directly (like `main()`), with no need for a wrapper utility like `runGenerator(..)` or `ASQ().runner(..)` to wrap it. Inside, instead of using `yield`, you'll use `await` (another new keyword) that tells the `async function` to wait for the promise to complete before proceeding.
+Как видите, асинхронную функцию можно вызвать напрямую (как `main()`) без необходимости оборачивать её во вспомогательную функцию вроде `runGenerator(...)` или `ASQ().runner(...)`. Внутри вместо `yield` используется `await` (ещё одно новое ключевое слово), которое говорит асинхронной функции, что в этом месте нужно подождать завершение промиса прежде чем продолжить работу.
 
-Basically, we'll have most of the capability of library-wrapped generators, but **directly supported by native syntax**.
+В принципе, у нас будет большая часть возможностей генераторов, обернутых вспомогательной библиотекой, но они будут **напрямую поддерживаться нативным синтаксисом**.
 
-Cool, huh!?
+Здорово, да!?
 
-In the meantime, libraries like *asynquence* give us these runner utilities to make it pretty darn easy to get the most out of our asynchronous generators!
+В то же время библиотеки, такие как *asynquence*, дают нам вспомогательные утилиты, чтобы максимально использовать наши асинхронные генераторы!
 
-## Summary
+## Заключение
 
-Put simply: a generator + `yield`ed promise(s) combines the best of both worlds to get really powerful and elegant sync(-looking) async flow control expression capabilities. With simple wrapper utilities (which many libraries are already providing), we can automatically run our generators to completion, including sane and sync(-looking) error handling!
+Проще говоря, комбинация генератор + промис сочетает в себе лучшее из обоих миров и даёт мощные и элегантные возможности выражать асинхронные потоки, которые выглядят как синхронные. С помощью простой вспомогательной обёртки (которую предоставляют многие библиотеки), мы можем автоматически запускать генератор при завершении промиса, при этом обрабатывать ошибки как в синхронном коде!
 
-And in ES7+ land, we'll probably see `async functions` that let us do that stuff even without a library utility (at least for the base cases)!
+А в ES7+ мы, вероятно, увидим асинхронные функции, которые позволят нам делать это даже без вспомогательной утилиты (по крайней мере, для базовых случаев)!
 
-**The future of async in JavaScript is bright**, and only getting brighter! I gotta wear shades.
+**Будущее асинхронности в JavaScript яркое**, и становится только ярче! Мне нужно носить солнечные очки.
 
-But it doesn't end here. There's one last horizon we want to explore:
+Но это ещё не конец. Есть один последний горизонт, который мы хотим исследовать:
 
-What if you could tie 2 or more generators together, let them run independently but "in parallel", and let them send messages back and forth as they proceed? That would be some super powerful capability, right!?! This pattern is called "CSP" (communicating sequential processes). We'll explore and unlock the power of CSP in the next article. Keep an eye out!
-
+Что если мы могли бы объединить два или более генераторов вместе, позволить им работать независимо, но «параллельно», и отправлять сообщения туда и обратно по мере их выполнения? Это была бы какая-то супер мощная возможность, не так ли!?! Этот шаблон называется «CSP» (communicating sequential processes / взаимодействующие последовательные процессы). Мы рассмотрим возможности CSP в следующей статье. Следите!
