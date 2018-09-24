@@ -1,4 +1,4 @@
-# Основы генераторов ES6
+# Основы генераторов ES6 {#es6_generators_basic}
 
 *Перевод статьи Kyle Simpson: [The Basics Of ES6 Generators](https://davidwalsh.name/es6-generators)*
 
@@ -6,10 +6,10 @@
 
 ## Генераторы ES6: Полная серия
 
-1. [Основы генераторов ES6](bonus/es6_generators_basic/README.md)
-2. [Глубокое погружение в генераторы ES6](bonus/es6_generators_dive/README.md)
-3. [Асинхронность с генераторами ES6](bonus/async_generators/README.md)
-4. [Параллелизм с генераторами ES6](bonus/concurrent_generators/README.md)
+1. [Основы генераторов ES6](#es6_generators_basic)
+2. [Глубокое погружение в генераторы ES6](#es6_generators_dive)
+3. [Асинхронность с генераторами ES6](#async_generators)
+4. [Параллелизм с генераторами ES6](#concurrent_generators)
 
 Одна из самых захватывающих новых возможностей в JavaScript ES6 — это новый тип функций, который называется **генераторами**. Название немного странное, но их поведение, на первый взгляд, может показаться *ещё более странным*. Эта статья рассказывает об основах работы генераторов и формирует понимание, почему они настолько важны для будущего JS.
 
