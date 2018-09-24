@@ -25,10 +25,10 @@
 function *foo() {
     try {
         var x = yield 3;
-        console.log( "x: " + x ); // может никогда не выполниться!
+        console.log("x: " + x); // может никогда не выполниться!
     }
     catch (err) {
-        console.log( "Ошибка: " + err );
+        console.log("Ошибка: " + err);
     }
 }
 ```
@@ -44,7 +44,7 @@ var res = it.next(); // { value:3, done:false }
 
 // вместо обычного возобновления очередным вызовом `next (..)`,
 // давайте выбросим ошибку:
-it.throw( "Упс!" ); // Ошибка: Упс!
+it.throw("Упс!"); // Ошибка: Упс!
 ```
 
 Здесь вы можете видеть, что мы используем другой метод итератора — `throw(...)` — который «выбрасывает» ошибку в генератор, как если бы она произошла в той точке, где генератор в настоящий момент приостановлен. Конструкция     `try...catch` ловит эту ошибку, как и следовало ожидать!
@@ -56,10 +56,10 @@ function *foo() { }
 
 var it = foo();
 try {
-    it.throw( "Упс!" );
+    it.throw("Упс!");
 }
 catch (err) {
-    console.log( "Ошибка: " + err ); // Ошибка: Упс!
+    console.log("Ошибка: " + err); // Ошибка: Упс!
 }
 ```
 
@@ -77,10 +77,10 @@ var it = foo();
 it.next(); // { value:3, done:false }
 
 try {
-    it.next( 42 ); // `42` не имеет метода `toUpperCase()`
+    it.next(42); // `42` не имеет метода `toUpperCase()`
 }
 catch (err) {
-    console.log( err ); // TypeError (из вызова `toUpperCase()`)
+    console.log(err); // TypeError (из вызова `toUpperCase()`)
 }
 ```
 
@@ -104,7 +104,7 @@ function *bar() {
 }
 
 for (var v of bar()) {
-    console.log( v );
+    console.log(v);
 }
 // 1 2 3 4 5
 ```
@@ -125,7 +125,7 @@ for (var v of bar()) {
 function *foo() {
     var z = yield 3;
     var w = yield 4;
-    console.log( "z: " + z + ", w: " + w );
+    console.log("z: " + z + ", w: " + w);
 }
 
 function *bar() {
@@ -133,19 +133,19 @@ function *bar() {
     var y = yield 2;
     yield *foo(); // `yield *` делегирует управление итерацией `foo()`
     var v = yield 5;
-    console.log( "x: " + x + ", y: " + y + ", v: " + v );
+    console.log("x: " + x + ", y: " + y + ", v: " + v);
 }
 
 var it = bar();
 
 it.next();      // { value:1, done:false }
-it.next( "X" ); // { value:2, done:false }
-it.next( "Y" ); // { value:3, done:false }
-it.next( "Z" ); // { value:4, done:false }
-it.next( "W" ); // { value:5, done:false }
+it.next("X"); // { value:2, done:false }
+it.next("Y"); // { value:3, done:false }
+it.next("Z"); // { value:4, done:false }
+it.next("W"); // { value:5, done:false }
 // z: Z, w: W
 
-it.next( "V" ); // { value:undefined, done:true }
+it.next("V"); // { value:undefined, done:true }
 // x: X, y: Y, v: V
 ```
 
@@ -163,7 +163,7 @@ function *foo() {
 function *bar() {
     yield 1;
     var v = yield *foo();
-    console.log( "v: " + v );
+    console.log("v: " + v);
     yield 4;
 }
 
@@ -188,7 +188,7 @@ function *foo() {
         yield 2;
     }
     catch (err) {
-        console.log( "foo поймал: " + err );
+        console.log("foo поймал: " + err);
     }
 
     yield; // остановка
@@ -203,7 +203,7 @@ function *bar() {
         yield *foo();
     }
     catch (err) {
-        console.log( "bar поймал: " + err );
+        console.log("bar поймал: " + err);
     }
 }
 
@@ -212,7 +212,7 @@ var it = bar();
 it.next(); // { value:1, done:false }
 it.next(); // { value:2, done:false }
 
-it.throw( "Ой ой!" ); // будет поймана внутри `foo()`
+it.throw("Ой ой!"); // будет поймана внутри `foo()`
 // foo поймал: Ой ой!
 
 it.next(); // { value:undefined, done:true }  --> Здесь нет ошибки!

@@ -122,7 +122,7 @@ function *foo(token) {
     // кладём другое сообщение в канал
     // `multBy20(..)` - функция на основе промиса,
     // которая умножает значение на `20` после некоторой задержки
-    token.messages.push( yield multBy20( value ) );
+    token.messages.push(yield multBy20(value));
 
     // передаём управление
     yield token;
@@ -138,7 +138,7 @@ function *bar(token) {
     // кладём другое сообщение в канал
     // `addTo2(..)` - функция на основе промиса,
     // которая прибавляет к значению `2` после некоторой задержки
-    token.messages.push( yield addTo2( value ) );
+    token.messages.push(yield addTo2(value));
 
     // передаём управление
     yield token;
@@ -155,7 +155,7 @@ function *bar(token) {
 
 ```js
 // инициализируем последовательность с начальным значением `2`
-ASQ( 2 )
+ASQ(2)
 
 // запускаем два CSP процесса вместе
 .runner(
@@ -165,9 +165,9 @@ ASQ( 2 )
 
 // какое бы сообщение мы не получили, передаём его
 // на следующий шаг последовательности
-.val( function(msg){
-    console.log( msg ); // "смысл жизни: 42"
-} );
+.val(function (msg) {
+    console.log(msg); // "смысл жизни: 42"
+});
 ```
 
 Конечно, это тривиальный пример. Но я думаю, что он прекрасно иллюстрирует концепцию.
@@ -198,7 +198,7 @@ ASQ( 2 )
 
 ```js
 ASQ(
-    ["ping","pong"], // имена игроков
+    ["ping", "pong"], // имена игроков
     { hits: 0 } // мяч
 )
 .runner(
@@ -206,9 +206,9 @@ ASQ(
     player,
     player
 )
-.val( function(msg){
-    message( "судья", msg );
-} );
+.val(function (msg) {
+    message("судья", msg);
+});
 ```
 
 Мы создали последовательность с двумя начальными сообщениями: `['ping', 'pong']` и `{ hits: 0 }`. Мы скоро до них доберемся.
@@ -220,12 +220,12 @@ ASQ(
 Реализация судьи:
 
 ```js
-function *referee(table){
+function *referee (table) {
     var alarm = false;
 
     // судья устанавливает таймер для игры
     // на своем секундомере (10 секунд)
-    setTimeout( function(){ alarm = true; }, 10000 );
+    setTimeout(function () { alarm = true; }, 10000);
 
     // продолжайте игру
     // пока не зазвучит таймер
@@ -256,10 +256,10 @@ function *player(table) {
     while (table.messages[2] !== "CLOSED") {
         // ударяет по мячу
         ball.hits++;
-        message( name, ball.hits );
+        message(name, ball.hits);
 
         // искусственная задержка, когда мяч возвращается к другому игроку
-        yield ASQ.after( 500 );
+        yield ASQ.after(500);
 
         // игра всё ещё продолжается?
         if (table.messages[2] !== "CLOSED") {
@@ -268,7 +268,7 @@ function *player(table) {
         }
     }
 
-    message( name, "Игра окончена!" );
+    message(name, "Игра окончена!");
 }
 ```
 
@@ -293,9 +293,9 @@ If the game is still going, they then "yield the table" back to the other player
 Сначала давайте определим помощника для управления обработчиками конечного состояния:
 
 ```js
-function state(val,handler) {
+function state(val, handler) {
     // обработчик сопрограммы (обертка) для этого состояния
-    return function*(token) {
+    return function* (token) {
         // обработчик перехода состояния
         function transition(to) {
             token.messages[0] = to;
@@ -311,7 +311,7 @@ function state(val,handler) {
             // этот обработчик соответствует текущему состоянию?
             if (token.messages[0] === val) {
                 // делегирует обработчику состояния
-                yield *handler( transition );
+                yield *handler(transition);
             }
 
             // передать управление другому обработчику состояния?
@@ -335,54 +335,53 @@ function state(val,handler) {
 // счётчик (исключительно для демонстрации)
 var counter = 0;
 
-ASQ( /* необязательно: значение начального состояния */ )
+ASQ(/* необязательно: значение начального состояния */)
 
 // запуск конечного автомата, переходы: 1 -> 4 -> 3 -> 2
 .runner(
 
     // обработчик состояния `1`
-    state( 1, function*(transition){
-        console.log( "in state 1" );
-        yield ASQ.after( 1000 ); // пауза 1с
-        yield transition( 4 ); // переход к состоянию `4`
-    } ),
+    state(1, function* (transition) {
+        console.log("in state 1");
+        yield ASQ.after(1000); // пауза 1с
+        yield transition(4); // переход к состоянию `4`
+    }),
 
     // обработчик состояния `2`
-    state( 2, function*(transition){
-        console.log( "in state 2" );
-        yield ASQ.after( 1000 ); // пауза 1с
+    state(2, function* (transition) {
+        console.log("in state 2");
+        yield ASQ.after(1000); // пауза 1с
 
         // только для демонстрационных целей, 
         // продолжайте движение по циклу состояний?
         if (++counter < 2) {
-            yield transition( 1 ); // переход к состоянию `1`
-        }
+            yield transition(1); // переход к состоянию `1`
         // всё сделано!
-        else {
+        } else {
             yield "Это всё, люди!";
-            yield transition( false ); // переход к состоянию прерывания
+            yield transition(false); // переход к состоянию прерывания
         }
-    } ),
+    }),
 
     // обработчик состояния `3`
-    state( 3, function*(transition){
-        console.log( "in state 3" );
-        yield ASQ.after( 1000 ); // пауза 1с
-        yield transition( 2 ); // переход к состоянию `2`
-    } ),
+    state(3, function* (transition) {
+        console.log("in state 3");
+        yield ASQ.after(1000); // пауза 1с
+        yield transition(2); // переход к состоянию `2`
+    }),
 
     // обработчик состояния `4`
-    state( 4, function*(transition){
-        console.log( "in state 4" );
-        yield ASQ.after( 1000 ); // пауза 1с
-        yield transition( 3 ); // переход к состоянию `3`
-    } )
+    state(4, function* (transition) {
+        console.log("in state 4");
+        yield ASQ.after(1000); // пауза 1с
+        yield transition(3); // переход к состоянию `3`
+    })
 
 )
 
 // конечный автомат завершён, двигаемся дальше
-.val(function(msg){
-    console.log( msg );
+.val(function (msg) {
+    console.log(msg);
 });
 ```
 

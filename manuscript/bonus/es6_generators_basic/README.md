@@ -22,20 +22,20 @@
 Пример:
 
 ```js
-setTimeout(function(){
-    console.log("Привет, Мир");
-},1);
+setTimeout(function () {
+    console.log("Привет, мир");
+}, 1);
 
 function foo() {
     // Внимание: никогда не делайте такие безумные долго выполняющиеся циклы
-    for (var i=0; i<=1E10; i++) {
+    for (var i = 0; i <= 1E10; i++) {
         console.log(i);
     }
 }
 
 foo();
 // 0..1E10
-// "Привет, Мир"
+// "Привет, мир"
 ```
 
 Здесь цикл `for` займёт довольно много времени: больше, чем одну секунду, но колбэк таймера с выражением `console.log(...)` не может прервать функцию `foo()`, пока она запущена. Поэтому он застрянет в очереди задач и будет терпеливо ждать. 
@@ -103,7 +103,7 @@ function foo(x) {
 
 function *bar() {
     yield; // просто пауза
-    foo( yield ); // ожидает параметр, чтобы передать в `foo(..)`
+    foo(yield); // ожидает параметр, чтобы передать в `foo(..)`
 }
 ```
 
@@ -152,10 +152,10 @@ console.log(message); // { value:1, done:false }
 Давайте продолжим итерацию:
 
 ```js
-console.log( it.next() ); // { value:2, done:false }
-console.log( it.next() ); // { value:3, done:false }
-console.log( it.next() ); // { value:4, done:false }
-console.log( it.next() ); // { value:5, done:false }
+console.log(it.next()); // { value:2, done:false }
+console.log(it.next()); // { value:3, done:false }
+console.log(it.next()); // { value:4, done:false }
+console.log(it.next()); // { value:5, done:false }
 ```
 
 Обратите внимание, что `done` всё ещё равно `false`, когда мы получили значение `5`. Это потому что *технически* функция-генератор ещё не завершена. Мы всё ещё можем вызвать финальный `next()`, и если передадим значение, оно станет результатом выражения `yield 5`. Только тогда функция-генератор завершится. 
@@ -163,7 +163,7 @@ console.log( it.next() ); // { value:5, done:false }
 Итак, теперь:
 
 ```js
-console.log( it.next() ); // { value:undefined, done:true }
+console.log(it.next()); // { value:undefined, done:true }
 ```
 
 В итоге, функция-генератор завершилась, но с `undefined` в качестве результата (поскольку мы уже исчерпали все выражения `yield ___`).
@@ -180,8 +180,8 @@ function *foo() {
 
 var it = foo();
 
-console.log( it.next() ); // { value:1, done:false }
-console.log( it.next() ); // { value:2, done:true }
+console.log(it.next()); // { value:1, done:false }
+console.log(it.next()); // { value:2, done:true }
 ```
 
 **... и нет.**
@@ -197,12 +197,12 @@ function *foo(x) {
     return (x + y + z);
 }
 
-var it = foo( 5 );
+var it = foo(5);
 
 // внимание: здесь ничего не отправляется в `next()`
-console.log( it.next() );       // { value:6, done:false }
-console.log( it.next( 12 ) );   // { value:8, done:false }
-console.log( it.next( 13 ) );   // { value:42, done:true }
+console.log(it.next());       // { value:6, done:false }
+console.log(it.next(12));   // { value:8, done:false }
+console.log(it.next(13));   // { value:42, done:true }
 ```
 
 Как видите, мы можем передать начальные параметры (в нашем случае `x`) в момент инициализации итератора `foo(5)` так же, как параметры обычной функции.
@@ -234,11 +234,11 @@ function *foo() {
 }
 
 for (var v of foo()) {
-    console.log( v );
+    console.log(v);
 }
 // 1 2 3 4 5
 
-console.log( v ); // всё ещё `5`, в не `6` :(
+console.log(v); // всё ещё `5`, в не `6` :(
 ```
 
 Как видите, цикл `for...of` автоматически подхватывает итератор, созданный функцией `foo()`, и проходит по всем значениям, пока не достигнет `done: true`. Пока свойство `done` равно `false`, он автоматически извлекает значение свойства `value` и присваивает его в переменную цикла (в нашем случае `v`). Как только свойство `done` станет равным `true`, цикл прекращается (финальное значение `value` игнорируется).

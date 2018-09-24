@@ -29,18 +29,18 @@
 
 ```js
 function makeAjaxCall(url,cb) {
-    // делаем какой-нибудь ajax-запрос
+    // делаем какой-нибудь AJAX-запрос
     // вызываем `cb(result)` после завершения
 }
 
-makeAjaxCall( "http://some.url.1", function(result1){
-    var data = JSON.parse( result1 );
+makeAjaxCall("http://some.url.1", function (result1) {
+    var data = JSON.parse(result1);
 
-    makeAjaxCall( "http://some.url.2/?id=" + data.id, function(result2){
-        var resp = JSON.parse( result2 );
-        console.log( "Значение, которое вы запрашивали: " + resp.value );
+    makeAjaxCall("http://some.url.2/?id=" + data.id, function (result2) {
+        var resp = JSON.parse(result2);
+        console.log("Значение, которое вы запрашивали: " + resp.value);
     });
-} );
+});
 ```
 
 Вот как можно сделать то же самое с использованием генератора (без дополнительного декорирования):
@@ -50,19 +50,19 @@ function request(url) {
     // здесь мы прячем асинхронность,
     // убирая её из основного кода нашего генератора
     // вызов `it.next(..)` возобновляет генератор
-    makeAjaxCall( url, function(response){
-        it.next( response );
-    } );
+    makeAjaxCall(url, function (response) {
+        it.next(response);
+    });
     // Внимание: здесь ничего не возвращается!
 }
 
 function *main() {
-    var result1 = yield request( "http://some.url.1" );
-    var data = JSON.parse( result1 );
+    var result1 = yield request("http://some.url.1");
+    var data = JSON.parse(result1);
 
-    var result2 = yield request( "http://some.url.2?id=" + data.id );
-    var resp = JSON.parse( result2 );
-    console.log( "Значение, которое вы запрашивали: " + resp.value );
+    var result2 = yield request("http://some.url.2?id=" + data.id);
+    var resp = JSON.parse(result2);
+    console.log("Значение, которое вы запрашивали: " + resp.value);
 }
 
 var it = main();
@@ -98,15 +98,14 @@ function request(url) {
     if (cache[url]) {
         // "отложить" кэшированный ответ достаточно долго
         // чтобы завершить текущий поток выполнения
-        setTimeout( function(){
-            it.next( cache[url] );
-        }, 0 );
-    }
-    else {
-        makeAjaxCall( url, function(resp){
+        setTimeout(function () {
+            it.next(cache[url]);
+        }, 0);
+    } else {
+        makeAjaxCall(url, function (resp) {
             cache[url] = resp;
-            it.next( resp );
-        } );
+            it.next(resp);
+        });
     }
 }
 ```
@@ -116,8 +115,8 @@ function request(url) {
 Теперь наш код генератора выглядит так:
 
 ```js
-var result1 = yield request( "http://some.url.1" );
-var data = JSON.parse( result1 );
+var result1 = yield request("http://some.url.1");
+var data = JSON.parse(result1);
 ..
 ```
 
@@ -150,9 +149,9 @@ var data = JSON.parse( result1 );
 ```js
 function request(url) {
     // Внимание: сейчас возвращается промис!
-    return new Promise( function(resolve,reject){
-        makeAjaxCall( url, resolve );
-    } );
+    return new Promise(function (resolve, reject) {
+        makeAjaxCall(url, resolve);
+    });
 }
 ```
 
@@ -167,21 +166,20 @@ function runGenerator(g) {
     var it = g(), ret;
 
     // асинхронная итерация по генератору
-    (function iterate(val){
-        ret = it.next( val );
+    (function iterate(val) {
+        ret = it.next(val);
 
         if (!ret.done) {
             // проверка "это промис?"
             if ("then" in ret.value) {
                 // ждём завершения промиса
-                ret.value.then( iterate );
-            }
+                ret.value.then(iterate);
             // непосредственное значение: просто отправляем его обратно
-            else {
+            } else {
                 // избегаем синхронной рекурсии
-                setTimeout( function(){
-                    iterate( ret.value );
-                }, 0 );
+                setTimeout(function () {
+                    iterate(ret.value);
+                }, 0);
             }
         }
     })();
@@ -197,14 +195,14 @@ function runGenerator(g) {
 Как мы теперь будем это использовать?
 
 ```js
-runGenerator( function *main(){
-    var result1 = yield request( "http://some.url.1" );
-    var data = JSON.parse( result1 );
+runGenerator(function *main() {
+    var result1 = yield request("http://some.url.1");
+    var data = JSON.parse(result1);
 
-    var result2 = yield request( "http://some.url.2?id=" + data.id );
-    var resp = JSON.parse( result2 );
-    console.log( "Значение, которое вы запрашивали: " + resp.value );
-} );
+    var result2 = yield request("http://some.url.2?id=" + data.id);
+    var resp = JSON.parse(result2);
+    console.log("Значение, которое вы запрашивали: " + resp.value);
+});
 ```
 
 Бам! Подождите... это же **тот самый код генератора, который мы использовали ранее?** Да. И снова, в этом проявляется мощность генераторов. Тот факт, что мы теперь создаём промис, отдаём его наружу и возобновляем генератор, когда промис выполнится — **ВСЁ ЭТО «СКРЫТЫЕ» ДЕТАЛИ РЕАЛИЗАЦИИ!** На самом деле не скрытые, просто отделены от кода, который использует значения (от потока управления в генераторе).
@@ -224,34 +222,35 @@ runGenerator( function *main(){
 // предположение: `runGenerator(..)` теперь также обрабатывает ошибки (опущено для краткости)
 
 function request(url) {
-    return new Promise( function(resolve,reject){
+    return new Promise(function (resolve, reject) {
         // передаём колбэк в стиле error-first
-        makeAjaxCall( url, function(err,text){
-            if (err) reject( err );
-            else resolve( text );
-        } );
-    } );
+        makeAjaxCall(url, function (err, text) {
+            if (err) reject(err);
+            else resolve(text);
+        });
+    });
 }
 
-runGenerator( function *main(){
+runGenerator(function *main() {
     try {
-        var result1 = yield request( "http://some.url.1" );
-    }
-    catch (err) {
-        console.log( "Ошибка: " + err );
+        var result1 = yield request("http://some.url.1");
+    } catch (err) {
+        console.log("Ошибка: " + err);
         return;
     }
-    var data = JSON.parse( result1 );
+    
+    var data = JSON.parse(result1);
 
     try {
-        var result2 = yield request( "http://some.url.2?id=" + data.id );
+        var result2 = yield request("http://some.url.2?id=" + data.id);
     } catch (err) {
-        console.log( "Ошибка: " + err );
+        console.log("Ошибка: " + err);
         return;
     }
-    var resp = JSON.parse( result2 );
-    console.log( "Значение, которое вы запрашивали " + resp.value );
-} );
+    
+    var resp = JSON.parse(result2);
+    console.log("Значение, которое вы запрашивали " + resp.value);
+});
 ```
 
 Если промис завершится неуспешно (или произойдёт любая другая ошибка/исключение), неудача промиса превратится в ошибку генератора (здесь не показано — с помощью `it.throw(...)` в генераторе), которая будет обработана конструкцией `try...catch`.
@@ -260,37 +259,36 @@ runGenerator( function *main(){
 
 ```js
 function request(url) {
-    return new Promise( function(resolve,reject){
-        makeAjaxCall( url, resolve );
-    } )
+    return new Promise(function (resolve, reject) {
+        makeAjaxCall(url, resolve);
+    })
     // делаем некоторую пост-обработку возвращаемого текста
-    .then( function(text){
+    .then(function (text) {
         // мы только что получили URL (перенаправление)?
-        if (/^https?:\/\/.+/.test( text )) {
+        if (/^https?:\/\/.+/.test(text)) {
             // делаем другой подзапрос по новому URL
-            return request( text );
-        }
+            return request(text);
         // иначе предположим, что текст - это то, что мы ожидали
-        else {
+        } else {
             return text;
         }
-    } );
+    });
 }
 
-runGenerator( function *main(){
-    var search_terms = yield Promise.all( [
-        request( "http://some.url.1" ),
-        request( "http://some.url.2" ),
-        request( "http://some.url.3" )
-    ] );
+runGenerator(function *main(){
+    var search_terms = yield Promise.all([
+        request("http://some.url.1"),
+        request("http://some.url.2"),
+        request("http://some.url.3")
+    ]);
 
     var search_results = yield request(
-        "http://some.url.4?search=" + search_terms.join( "+" )
+        "http://some.url.4?search=" + search_terms.join("+")
     );
-    var resp = JSON.parse( search_results );
+    var resp = JSON.parse(search_results);
 
-    console.log( "Search results: " + resp.value );
-} );
+    console.log("Результаты поиска: " + resp.value);
+});
 ```
 
 `Promise.all([...])` создаёт промис, который ждёт три дочерних промиса, и отдаёт этот главный промис в функцию `runGenerator(...)`. Вложенные промисы могут получить ответ в виде другого URL и добавить новый промис в цепочку. [Прочитайте этот раздел в статье](http://blog.getify.com/promises-part-5/#the-chains-that-bind-us), чтобы узнать больше о цепочках промисов.
@@ -313,10 +311,10 @@ runGenerator( function *main(){
 
 ```js
 function request(url) {
-    return ASQ( function(done){
+    return ASQ(function (done) {
         // передаём здесь колбэк в стиле error-first
-        makeAjaxCall( url, done.errfcb );
-    } );
+        makeAjaxCall(url, done.errfcb);
+    });
 }
 ```
 
@@ -327,10 +325,10 @@ function request(url) {
 ```js
 // сначала вызываем функцию `getSomeValues()`, создающую последовательность/промис,
 // затем подключаем к последовательности больше асинхронных шагов
-getSomeValues()
+getSomeValues();
 
 // теперь используем генератор для обработки полученных значений
-.runner( function*(token){
+.runner(function* (token) {
     // token.messages будет заполняться любыми сообщениями
     // с предыдущего шага
     var value1 = token.messages[0];
@@ -341,30 +339,30 @@ getSomeValues()
     // их завершения (в любом порядке)
     // Примечание: `ASQ().all(..)` - это как `Promise.all(..)`
     var msgs = yield ASQ().all(
-        request( "http://some.url.1?v=" + value1 ),
-        request( "http://some.url.2?v=" + value2 ),
-        request( "http://some.url.3?v=" + value3 )
-    );
+        request("http://some.url.1?v=" + value1),
+        request("http://some.url.2?v=" + value2),
+        request("http://some.url.3?v=" + value3)
+   );
 
     // отправляем сообщение на следующий шаг
     yield (msgs[0] + msgs[1] + msgs[2]);
-} )
+});
 
 // отправляем окончательный результат предыдущего генератора
 // на следующий запрос
-.seq( function(msg){
-    return request( "http://some.url.4?msg=" + msg );
-} )
+.seq(function (msg) {
+    return request("http://some.url.4?msg=" + msg);
+});
 
 // теперь мы наконец закончили!
-.val( function(result){
-    console.log( result ); // всё выполнено успешно!
-} )
+.val(function (result) {
+    console.log(result); // всё выполнено успешно!
+});
 
 // или у нас была какая-то ошибка!
-.or( function(err) {
-    console.log( "Error: " + err );
-} );
+.or(function (err) {
+    console.log("Ошибка: " + err);
+});
 ```
 
 Утилита `runner(...)` получает (необязательные) сообщения для запуска генератора, которые исходят из предыдущего шага последовательности и доступны в генераторе в массиве `token.messages`.
@@ -385,12 +383,12 @@ getSomeValues()
 
 ```js
 async function main() {
-    var result1 = await request( "http://some.url.1" );
-    var data = JSON.parse( result1 );
+    var result1 = await request("http://some.url.1");
+    var data = JSON.parse(result1);
 
-    var result2 = await request( "http://some.url.2?id=" + data.id );
-    var resp = JSON.parse( result2 );
-    console.log( "The value you asked for: " + resp.value );
+    var result2 = await request("http://some.url.2?id=" + data.id);
+    var resp = JSON.parse(result2);
+    console.log("Запрошенное значение: " + resp.value);
 }
 
 main();
