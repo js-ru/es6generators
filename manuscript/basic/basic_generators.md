@@ -17,6 +17,7 @@ I> Допустимы варианты `function* sample()`, `function *sample()
 
 ```js
 let func = sample();
+
 func.next();
 // -> {value: 1, done: false}
 func.next();

@@ -61,6 +61,7 @@ function *oneToThree() {
 }
 
 loop(oneToThree());
+
 console.log(result);
 // -> undefined
 ```
@@ -86,6 +87,7 @@ function *generator() {
 }
 
 loop(generator());
+
 console.log(result);
 // -> "d"
 ```

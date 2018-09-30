@@ -12,6 +12,7 @@ function *sample() {
 }
 
 let func = sample();
+
 func.next();
 // -> {value: 1, done: false}
 func.next(1);
@@ -39,6 +40,7 @@ function *sample() {
 }
 
 let func = sample();
+
 func.next();
 // -> {value: 1, done: false}
 func.next();
