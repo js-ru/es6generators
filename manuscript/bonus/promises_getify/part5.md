@@ -1,3 +1,5 @@
+# Promises: The LEGO problem (part 5) {#promises-getify-part-5}
+
 A> This is a multi-part blog post series on the whys and hows and problems of Promises:
 A>
 A> * [Part 1: The Sync Problem](#promises-getify-part-1)
@@ -5,10 +7,6 @@ A> * [Part 2: The Inversion Problem](#promises-getify-part-2)
 A> * [Part 3: The Trust Problem](#promises-getify-part-3)
 A> * [Part 4: The Extension Problem](#promises-getify-part-4)
 A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
-
-* * *
-
-# Promises: The LEGO problem (part 5) {#promises-getify-part-5}
 
 In [Part 4: The Extension Problem](#promises-getify-part-4), I talked about how common creating extensions and abstractions on top of promises is, and some of the hazards therein. But why aren’t promises _good enough_ as is, at least for most developers? Is that what they were even designed to fit?
 

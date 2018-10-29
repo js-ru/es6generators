@@ -1,3 +1,5 @@
+# Promises: The Extension Problem (part 4) {#promises-getify-part-4}
+
 A> This is a multi-part blog post series on the whys and hows and problems of Promises:
 A>
 A> * [Part 1: The Sync Problem](#promises-getify-part-1)
@@ -5,10 +7,6 @@ A> * [Part 2: The Inversion Problem](#promises-getify-part-2)
 A> * [Part 3: The Trust Problem](#promises-getify-part-3)
 A> * [Part 4: The Extension Problem](#promises-getify-part-4)
 A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
-
-* * *
-
-# Promises: The Extension Problem (part 4) {#promises-getify-part-4}
 
 By now, I hope you’ve read [Part 1: The Sync Problem](#promises-getify-part-1), [Part 2: The Inversion Problem](#promises-getify-part-2) and [Part 3: The Trust Problem](#promises-getify-part-3) of this series. I assume from here on you fully understand what Promises are all about and why it’s so important to discuss them to this level of detail.
 

@@ -1,3 +1,5 @@
+# Promises: The Trust Problem (part 3) {#promises-getify-part-3}
+
 A> This is a multi-part blog post series on the whys and hows and problems of Promises:
 A>
 A> * [Part 1: The Sync Problem](#promises-getify-part-1)
@@ -5,10 +7,6 @@ A> * [Part 2: The Inversion Problem](#promises-getify-part-2)
 A> * [Part 3: The Trust Problem](#promises-getify-part-3)
 A> * [Part 4: The Extension Problem](#promises-getify-part-4)
 A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
-
-* * *
-
-# Promises: The Trust Problem (part 3) {#promises-getify-part-3}
 
 If you are still needing to get up to speed on what Promises are or how they are useful, check out [Part 1: The Sync Problem](#promises-getify-part-1) and [Part 2: The Inversion Problem](#promises-getify-part-2) of this series.
 

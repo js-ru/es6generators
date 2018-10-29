@@ -39,5 +39,9 @@ bonus/es6_generators_dive/README.md
 bonus/async_generators/README.md
 bonus/concurrent_generators/README.md
 bonus/promises_getify/part1.md
+bonus/promises_getify/part2.md
+bonus/promises_getify/part3.md
+bonus/promises_getify/part4.md
+bonus/promises_getify/part5.md
 bonus/what-are-javascript-generators-and-how-to-use-them/README.md
 bonus/javascript-generator-yield-next-async-await/README.md

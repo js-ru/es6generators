@@ -1,3 +1,5 @@
+# Promises: The Inversion Problem (part 2) {#promises-getify-part-2}
+
 A> This is a multi-part blog post series on the whys and hows and problems of Promises:
 A>
 A> * [Part 1: The Sync Problem](#promises-getify-part-1)
@@ -6,9 +8,6 @@ A> * [Part 3: The Trust Problem](#promises-getify-part-3)
 A> * [Part 4: The Extension Problem](#promises-getify-part-4)
 A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
 
-* * *
-
-# Promises: The Inversion Problem (part 2) {#promises-getify-part-2}
 
 In [Part 1: The Sync Problem](#promises-getify-part-1) of this series, we uncovered JS’s async event-loop **concurrency** model to explain how multiple tasks, when broken up into their constituent steps, can be interleaved so as to seem that they run “at the same time”.
 
