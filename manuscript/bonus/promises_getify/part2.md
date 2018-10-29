@@ -18,7 +18,7 @@ We’ll now further motivate the search for a better solution to expressing asyn
 
 **Note:** This is not an exhaustive tutorial on the Promises API, but rather an overview of why and how Promises as a coding pattern address our concerns. For a more complete look at the mechanism, see [JavaScript Promises: There and back again](http://www.html5rocks.com/en/tutorials/es6/promises/).
 
-### Nested Callbacks
+## Nested Callbacks
 
 The event-loop model for concurrency has been built into JS from the beginning. And we’ve been writing asynchronous programs that whole time. And until recently, the only common pattern for handling these tasks was the humble callback function.
 
@@ -44,7 +44,7 @@ btn.addEventListener( "click", function(evt){
 
 The most natural way to chain a series of asynchronous steps together using plain callbacks is to nest them together, where step 2 is hard-coded into step 1, and step 3 is hard-coded into step 2, etc.
 
-#### Callback Hell
+### Callback Hell
 
 The more you nest callbacks together, the more you create a nested, heavily indented mess of spaghetti code. Not surprisingly, this type of code is harder to write, harder to understand, and harder to maintain. But the unassisted work it takes to unwind these parts into something more sane often proves more effort than it’s worth.
 
@@ -52,7 +52,7 @@ This type of nesting/indentation is often lovingly called “callback hell”. I
 
 But I would suggest to you that “callback hell” really doesn’t have much to do with nesting or indentation. If you’ve been told that before, don’t believe the person who you heard it from, because they don’t quite understand what’s fully at stake.
 
-### Trust Lost
+## Trust Lost
 
 The real problem with callbacks (whether they’re nested or not) is much deeper than whitespace in your code editor.
 
@@ -94,7 +94,7 @@ In the first half of your program, you were in control of how things proceeded. 
 
 **Inversion of Control** implies a lost-trust relationship between your code and someone else’s code.
 
-#### Scare Tactics
+### Scare Tactics
 
 What happens when `someAsyncThing(..)` is a method in a third-party library which you don’t own, you don’t control, and you can’t audit? Good luck with that!
 
@@ -110,7 +110,7 @@ You probably invent some sort of state tracking that your callback has access to
 
 This may seem like a silly scenario, but it’s a lot more prevalent than you may be aware. The more sophisticated our programs become, and the more we integrate with third-party/external code, the more likely these scenarios will pop up.
 
-#### Duct-tape
+### Duct-tape
 
 Now what? You invented the state tracking mechanism for your callback, and you sleep a little better at night (despite how it made your code a bit uglier). But you’ve actually only addressed one of the **many** items on that trust-list.
 
@@ -118,7 +118,7 @@ Guess what happens when another bug uncovers another moment of lost-trust? More 
 
 More duct-tape. You’re constantly going to be covering up holes in the callback paradigm. No matter how good a developer you are, and no matter how awesome your duct-tape, the fact is: **callbacks are full of holes in your trust wall**.
 
-### The Promised Solution
+## The Promised Solution
 
 Some people like running around with duct-tape and inventing patches to the holes in their trust wall.
 
@@ -128,7 +128,7 @@ But at some point, you may ask yourself, is there some other pattern for express
 
 Before I explain exactly how they work, though, let me explain a bit more about the conceptuals behind them.
 
-#### Fast Food Transaction
+### Fast Food Transaction
 
 You walk into your favorite fast-food restaurant, go up to the counter, and order some nice yummy food. The cashier tells you it’s $7.53, and you hand her the money. What does she give you back?
 
@@ -140,7 +140,7 @@ What just happened is a good metaphor for Promises. You went up to the counter t
 
 In other words, the receipt with the order number was a promise for a future value.
 
-#### Completion Event
+### Completion Event
 
 Think about calling `someAsyncThing(..)` from above. Wouldn’t it be nicer if, instead of passing it your callback, you could call it and then **subscribe to an event** that would notify you when it was complete (either right away or much later)?
 
@@ -164,7 +164,7 @@ listener.on( "failure", function(err){
 
 Now, for every function call we make, we could be notified asynchronously if the function completed successfully or if it failed to complete. In other words, each function call would be a _decision point_ in the flow-control of the program.
 
-#### Promise “Events”
+### Promise “Events”
 
 **Promises** are how a function call says, “Here’s an event listener to be notified when I complete or fail.”
 
@@ -193,7 +193,7 @@ p.then(
 
 You essentially listen for the `then` event, and then you’re told of success or failure based on which callback gets called.
 
-#### Uninversion
+### Uninversion
 
 With promises, instead of _inverting control_ by passing a callback to the third party utility, we **retain control** of over the continuation of the program. This is a huge step forward for async flow-control expression in JavaScript!
 
@@ -239,7 +239,7 @@ The most important characteristic of promises is that it normalizes into predict
 
 And in that normalization, it leaves our program in a position to control and trust how it will proceed, rather than handing that control (via a callback continuation) off to an untrustable third-party.
 
-### Summary
+## Summary
 
 Regardless of what you may have heard, “callback hell” is not really about nested functions and the indentations they create in our code editor.
 

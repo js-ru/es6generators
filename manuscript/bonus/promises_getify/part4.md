@@ -12,7 +12,7 @@ A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
 
 By now, I hope you’ve read [Part 1: The Sync Problem](#promises-getify-part-1), [Part 2: The Inversion Problem](#promises-getify-part-2) and [Part 3: The Trust Problem](#promises-getify-part-3) of this series. I assume from here on you fully understand what Promises are all about and why it’s so important to discuss them to this level of detail.
 
-### Don’t ~~Anger~~ Extend The Natives!
+## Don’t ~~Anger~~ Extend The Natives!
 
 Back in 2005, the [Prototype.js](http://prototypejs.org/) framework was one of the earliest libraries to pioneer the idea of extending built in `.prototype`‘s of JavaScript’s native objects. The idea was that we could extend the existing capabilities by just dropping extra methods on top of them (and in some cases, wrapping existing methods).
 
@@ -22,7 +22,7 @@ The vast majority of developers will now tell you, either: “never extend nativ
 
 To _Prototype_‘s credit, they no longer do that kind of stuff. They took a really bad rap, and they long since have seen the error of those ways. They deserve more credit than they get for cleaning up their act (and the native `.prototype`s).
 
-#### Array Push
+### Array Push
 
 Imagine this really-old scenario (which actually happened to me): Way back in the Netscape 3/4 and IE4 days, the early landscape of JS was much less awesome than it is today. Among many other notable gaps, arrays did not have a `push(..)` method to add elements onto the end of them.
 
@@ -68,7 +68,7 @@ I’m not the only one. Countless thousands or millions of developers have seen 
 
 **At least, this caution applies if you plan to be around to support that code.** If not, you can just leave that land-mine for some poor, unsuspecting soul like me! :/
 
-### Promise Extensions
+## Promise Extensions
 
 What does all that old-grampa whining and finger-waving have to do with the modern hotness of Promises?
 
@@ -76,7 +76,7 @@ Because those who are making `Promise` “polyfills” seem to have forgotten or
 
 Do I really need to explain why this is a “future” bad idea (there’s a pun there you may have missed, because promises were once called “futures” in the DOM world)?
 
-#### Blue In The Face
+### Blue In The Face
 
 We could argue this fact until we’re out of breath, and it still won’t change the facts. If you extend the natives, you’re being future-hostile, even if you think you’re doing a really good job of it.
 
@@ -108,7 +108,7 @@ And Bluebird adds **[lots of stuff](https://github.com/petkaantonov/bluebird/blo
 
 **Ugh.** I hope I never have fix someone’s busted Promise extension code. But odds are, I probably will.
 
-#### Future Constrained
+### Future Constrained
 
 But that’s not even the worst of it. What if Bluebird is so damn popular, and there’s so much real-world code out on the web relying on all those extensions, that some day the TC39 committee is forced to **avoid** extending the official spec in some way (and find some work-around), or maybe they’re forced to **not fix some bug**, all because if they do so, they’d break “too many sites” using these non-standard extensions?
 
@@ -118,7 +118,7 @@ Don’t believe me? It’s happened countless times already. You know why the JS
 
 **I really don’t want to see this happen with `Promise`s.** Please, stop defining Promise polyfill/libraries that extend the natives. _Please_.
 
-### Wrapper Abstractions
+## Wrapper Abstractions
 
 I think we need to see more true-to-spec-and-only-that polyfills, like my [“Native Promise Only”](http://github.com/getify/native-promise-only). We need good, solid, performance-optimized, but narrowly spec-compliant polyfills.
 
@@ -192,7 +192,7 @@ But if _asynquence_ is not your flavor of promises, by all means, [find one](htt
 
 But please don’t pick one that extends the native `Promise` directly. That’s bad for our future selves. Seriously.
 
-### Summary
+## Summary
 
 Promises are amazing and they’re going to revolutionize the way a lot of JS developers write and maintain async flow-control in their programs.
 

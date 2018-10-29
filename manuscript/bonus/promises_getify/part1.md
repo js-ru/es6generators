@@ -14,7 +14,7 @@ A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
 
 In this post, I will explain what motivates the need for a better way (aka, Promises!) to express async flow-control in our programs.
 
-### Async
+## Async
 
 You’ve almost certainly heard the term “async” used to describe JavaScript functionality. What exactly does that mean, though?
 
@@ -26,7 +26,7 @@ In other words, the JS engine is like an amusement ride at a theme park, with a 
 
 The technical term for this _line_ you wait in is called the “event loop”. It spins as quickly as it can, and if anyone’s in line, it lets the JS engine execute that piece of code, then it moves onto the next, or it patiently waits for someone else to get in line.
 
-#### Concurrency
+### Concurrency
 
 If you only thought of your program in terms of “one task at a time”, that would seem quite slow and limiting, right?
 
@@ -69,7 +69,7 @@ It’s like there’s two separate amusement park rides, with two separate lines
 
 The JS _event loop_ is a simple model for _concurrency_. It simply allows each “event” (that is, generally, a function callback execution) to be added onto the end of the line, on a first-come-first-served basis. When its turn is ready, the callback is processed individually. Whatever larger macro-task sequence that callback step is part of (**Task A** or **Task B**) has its steps interleaved with steps from other tasks, etc.
 
-### Synchronous Async
+## Synchronous Async
 
 One of the subtle but troublesome parts of writing asynchronous code in JS (especially using callbacks) is that it produces a mismatch between how we look at and reason about the code (the flow-control) and how the engine actually processes it.
 
@@ -117,7 +117,7 @@ If we could write code like that, we could hide/abstract the potentially async n
 
 In other words, we can make “async” just be a pesky implementation detail, and keep that stuff where it belongs: buried beneath our real code.
 
-### Summary
+## Summary
 
 We haven’t solved the problem yet. But at least we know what the problem is: that expressing async code in an async way is hard, and even harder for our brains to manage.
 

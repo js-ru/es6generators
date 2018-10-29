@@ -12,7 +12,7 @@ A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
 
 In [Part 4: The Extension Problem](#promises-getify-part-4), I talked about how common creating extensions and abstractions on top of promises is, and some of the hazards therein. But why aren’t promises _good enough_ as is, at least for most developers? Is that what they were even designed to fit?
 
-### I’ve Got Friends In Low Places
+## I’ve Got Friends In Low Places
 
 Promises are self-admittedly designed as a low-level building block. A promise is like a LEGO. In and of itself, the LEGO is only so interesting. But in putting them together, you get more interesting things.
 
@@ -26,7 +26,7 @@ In other words, promises were essentially intended to be a low-level API that wo
 
 You’re going to benefit massively from them, but odds are you’re probably not going to use them directly as much as you might think. You’re going to use the _results_ of them in hundreds of different libraries.
 
-### Control vs. Value
+## Control vs. Value
 
 Allow me to bust the first and biggest misconception you may have about promises: **they aren’t _really_ about flow control**.
 
@@ -38,7 +38,7 @@ This is one of the most profound benefits of promises, though. They create a uni
 
 Promises are like tiny, self-contained representations of state. They’re ultimately composable, which means your entire program can be represented by them. In that sense, the observation that Promises are really _functional_ concepts — they’re monads — bears itself out.
 
-### Limitations
+## Limitations
 
 Just as you can’t expect a single 4×2 LEGO alone to _be_ a race-car, so too expecting promises to _be_ your async flow-control mechanism is asking a bit too much of them.
 
@@ -46,7 +46,7 @@ So what does this observation about the nature of a promise as a non-temporal, e
 
 I’m going to spend the rest of this post talking about these limitations. **But I’m not doing so as a criticism of Promises.** I’m doing so in an attempt to highlight the importance of extensions and abstractions.
 
-#### Error Handling
+### Error Handling
 
 I fibbed a bit earlier when I said a promise is just a container for a value. Actually, it’s a container for either a successful value or a failure to get a value. At any given time, a promise is either a pending future value, a concrete successful value, or an error in getting the desired value. It’s never more than one of those.
 
@@ -88,7 +88,7 @@ So the Promises mechanism has to let you create promises where you can choose to
 
 There’s a big problem even more subtle here, and probably where _most_ developers new to (and even seasoned with!) promises get tripped up.
 
-#### The Chains That Bind Us
+### The Chains That Bind Us
 
 To understand that problem, we first need to understand how exactly promises are chained together. I think you’ll quickly see that promise-chaining is both powerful and kinda complicated to dance around in your head.
 
@@ -187,7 +187,7 @@ promiseC.catch( reportError );
 
 OK, so now we’re catching the errors inside of `displayAnswer(..)`. Kinda sucks to have to remember to do that. Not exactly “pit of success”. But it’s a problem you _can_ train yourself to avoid.
 
-#### Turtles
+### Turtles
 
 But there’s an even more subtle problem! What if the `reportError(..)` function also has a JS exception in it while it’s running to handle reporting the error from `displayAnswer(..)`? Will anyone catch **_that_** error? **Nope.**
 
@@ -214,7 +214,7 @@ You still have to remember to call `done()`, otherwise errors can get swallowed 
 
 “Yuck!”, you must be thinking. This sucks more than we thought it was going to, doesn’t it? **Welcome to the fun world of promises.**
 
-#### Value vs. Values
+### Value vs. Values
 
 Enough about errors specifically. Another limitation of the core promise concept is that a single promise represents a single (potentially future) value. What is a single value? It’s one object, or one array, or one string, or one number. Oh, wait, I can stick multiple values inside my value wrapper, like multiple elements in an array or object? Cool!
 
@@ -248,7 +248,7 @@ Why? I believe this has something to do with predictability of composability, or
 
 Bottom line, you’ll have to **remember** to do your own value-wrapping, or you’re going to silently lose data, and probably tear some of your hair out figuring out why.
 
-#### In-Parallel
+### In-Parallel
 
 Real world apps often have more than one thing that’s going to happen at the “same time”. In essence, there’s a natural need for a construct to handle, “do these two or more things in ‘parallel’, and wait for them all to finish”.
 
@@ -275,7 +275,7 @@ Another symptom of this limitation is that you’ll quickly find yourself using 
 
 Luckily, there are many abstractions out there already, and more being invented every day!
 
-#### Single Shot Of Espresso, Please!
+### Single Shot Of Espresso, Please!
 
 Another natural thing about promises which is quite limiting is that they are fire-once-and-done.
 
@@ -300,7 +300,7 @@ Microsoft’s [RxJS Reactive Extensions](https://web.archive.org/web/20160315112
 
 My _asynquence_ library has a [`react(..)` plugin](https://web.archive.org/web/20160315112316/https://github.com/getify/asynquence/tree/master/contrib#react-plugin) that provides a similar capability in a simpler fashion without as much fanfare.
 
-#### In The Land Of Blind…
+### In The Land Of Blind…
 
 In a world already dominated by APIs that use callbacks, inserting promises into the equation is somewhat more difficult than we’d like it to be. Consider:
 
@@ -335,7 +335,7 @@ function myAjax(url) {
 
 Bam!
 
-#### Stop The Presses!
+### Stop The Presses!
 
 Sometimes, your app gets into a state where you want to stop it from doing anything else, while you recover. But what if you have currently pending promises at that moment?
 
@@ -383,7 +383,7 @@ You can’t unregister handlers from a promise. And because a promise has to be 
 
 Many promises libraries are proposing to provide exactly this kind of capability, but it’s a mistake all the way around. Cancelation is not something that belongs _on_ a promise, but instead on an abstraction layer on top of promises, just as we showed.
 
-#### Verbosity
+### Verbosity
 
 Another, admittedly more minor, concern with the native promises low-level API is that certain things are not assumed, and so you have to manually do them, which is great for flexibility but often can lead to tiresome boilerplate.
 
@@ -427,7 +427,7 @@ doTask1()
 
 There’s reasons for this limitation, for sure, but it just detracts from the simplicity of usage in favor of the preservation of flexibility and predictability. Abstractions can (and do!) easily solve this nitpick.
 
-### All `.done()`
+## All `.done()`
 
 All these reasons, and more, are reasons why the low-level native Promise API is simultaneously quite powerful **and** quite limited.
 

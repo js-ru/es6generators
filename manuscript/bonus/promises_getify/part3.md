@@ -12,7 +12,7 @@ A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
 
 If you are still needing to get up to speed on what Promises are or how they are useful, check out [Part 1: The Sync Problem](#promises-getify-part-1) and [Part 2: The Inversion Problem](#promises-getify-part-2) of this series.
 
-### Promise State == Trust
+## Promise State == Trust
 
 Previously, we asserted an important list of guarantees about how promises work, which are _the foundation_ on which we can base our trust in the promise mechanism as a solution to inversion of control.
 
@@ -26,11 +26,11 @@ _Can_ you do that yourself without trusting promises? Of course. But odds are: y
 
 **Promises are designed to standardize and centralize that logic.** You can use a conformant promise system without any loss-of-trust that _it will behave_ according to the guarantees of the specification for the Promise mechanism.
 
-### Trustworthy?
+## Trustworthy?
 
 That guarantee-trust contract sounds great… in theory. But is it possible to actually have such a mechanism in JavaScript?
 
-#### Trust Myths
+### Trust Myths
 
 Let’s first dispell a couple of myths about “trust” with JS code, as _I mean it here presently_:
 
@@ -45,7 +45,7 @@ I could go on, but I think you get the point. We’re narrowing our discussion h
 
 That’s not to say that some of what we can do with Promises (especially native built-in ones via ES6) doesn’t _help_ alleviate **some** of the above concerns. It’s just that those concerns are at a much higher level of abstraction — trusting JS in the page/application itself — and that’s a question that goes far beyond coding APIs and patterns, and will therefore be left to subject matter experts.
 
-#### Trusting In A Promise State
+### Trusting In A Promise State
 
 Let’s consider this scenario:
 
@@ -124,7 +124,7 @@ You see, using promises is based on trust. And that trust is based on the state 
 
 Without trust in the state of a promise being immutable except by its creator, **nearly all of the benefit of promises is lost.**
 
-### Trust Misplaced?
+## Trust Misplaced?
 
 “No big deal, duh!”, you think. Of course promise state has to be trustable. That much is obvious, right?
 
@@ -140,7 +140,7 @@ For the record, my ES6 Promise polyfill [“Native Promise Only”](http://githu
 
 Why? Because I care deeply about not just the _specification_ of Promises but the **spirit of Promises**.
 
-#### Tradeoffs
+### Tradeoffs
 
 But why on earth would all these highly respected Promise polyfills and libraries forgo such an important part of what makes promises, promises?
 
@@ -158,7 +158,7 @@ Moreover, the implementations of these sub-classes are probably going to be rath
 
 Bottom line, **I’m not in any way excited by promise sub-classing.**
 
-#### The how!?
+### The how!?
 
 Without getting into too much JS detail (seriously, go read [my “YDKJS: this & Object Prototypes” book](https://github.com/getify/You-Dont-Know-JS/blob/master/this%20%26%20object%20prototypes/README.md)!), expressing `Promise` as a “class” that can be `extend`ed requires you to put its instance methods (namely `then(..)` and `catch(..)`) onto the `Promise.prototype` object.
 
@@ -174,7 +174,7 @@ I could write a whole book on why that doesn’t work (oh wait, I did!), but I a
 
 These two concepts are mutually exclusive in ES5 and below. Well, practically speaking, anyway.
 
-#### Promises Weakened
+### Promises Weakened
 
 As of ES6, another feature we’re getting is the **WeakMap**. Briefly, without too much detail, a `WeakMap` instance can use actual object references as keys, and thus can associate data with an object instance without actually storing that data _on_ the object.
 
@@ -241,7 +241,7 @@ But that’s not even the worst part. `WeakMap` is called “Weak” because of 
 
 Yeah, `WeakMap` is only a false hope. It doesn’t solve our problem in ES6, and it makes things much worse in ES5 and below.
 
-#### To Protect State or To Sub-class?
+### To Protect State or To Sub-class?
 
 …that is the question!
 
@@ -251,7 +251,7 @@ But a choice has to be made, and one way or the other, a divergence is going to 
 
 So what should we do?
 
-### Summary
+## Summary
 
 It would appear the other promise polyfills have chosen to retain sub-classing, at the expense of ~~their mortal souls~~ immutable state.
 
