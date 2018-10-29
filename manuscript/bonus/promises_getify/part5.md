@@ -74,11 +74,11 @@ See the `winAtLife()` and `keepSearching()` function references? We’re saying,
 
 What if we left `keepSearching` out of the call? Aside from being an eternal optimist that assumes you will find it and win at life, what dangers are there?
 
-If your promise fails to find the meaning of life (or, if some JavaScript error/exception happens while it’s working on the answer), it will silently hold onto that error fact, perhaps forever. Even if you [wait 10 million years like the Hitchhiker did](https://web.archive.org/web/20160315112316/http://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Answer_to_the_Ultimate_Question_of_Life.2C_the_Universe.2C_and_Everything_.2842.29), you will never _know_ that the request for the answer failed.
+If your promise fails to find the meaning of life (or, if some JavaScript error/exception happens while it’s working on the answer), it will silently hold onto that error fact, perhaps forever. Even if you [wait 10 million years like the Hitchhiker did](http://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Answer_to_the_Ultimate_Question_of_Life.2C_the_Universe.2C_and_Everything_.2842.29), you will never _know_ that the request for the answer failed.
 
 You can only _know_ that it failed by _observing_ it’s failure. Ooo, that could get into deeper metaphysical or quantum stuff. Let’s stop right there.
 
-So, a promise without a failure handler is one that can silently fail. That’s no good. It means if you forget, you fall into the pit of failure, not the [pit of success](https://web.archive.org/web/20160315112316/http://blog.codinghorror.com/falling-into-the-pit-of-success/).
+So, a promise without a failure handler is one that can silently fail. That’s no good. It means if you forget, you fall into the pit of failure, not the [pit of success](http://blog.codinghorror.com/falling-into-the-pit-of-success/).
 
 So you may wonder: why can promises have the failure handler omitted? Because you may not care about the failure _now_, only later. And the natural temporality of our programs means, the system can’t know _now_ what you intend to do later. It may be perfectly valid for you to omit a failure handler _now_, because you know you’re about to chain off this promise to another one, and _that_ promise will have a failure handler.
 
@@ -294,9 +294,9 @@ This sucks, not only because it’s in a sense less efficient to re-create the p
 
 A pattern that is catching quick fire right now is the “reactive” pattern, which is an abstraction that allows a repeating event (such as the “data” event from a stream, etc) to fire off a sequence of async steps.
 
-Microsoft’s [RxJS Reactive Extensions](https://web.archive.org/web/20160315112316/https://rx.codeplex.com/) library calls this idea, roughly, “observables”.
+Microsoft’s [RxJS Reactive Extensions](https://rx.codeplex.com/) library calls this idea, roughly, “observables”.
 
-My _asynquence_ library has a [`react(..)` plugin](https://web.archive.org/web/20160315112316/https://github.com/getify/asynquence/tree/master/contrib#react-plugin) that provides a similar capability in a simpler fashion without as much fanfare.
+My _asynquence_ library has a [`react(..)` plugin](https://github.com/getify/asynquence/tree/master/contrib#react-plugin) that provides a similar capability in a simpler fashion without as much fanfare.
 
 ### In The Land Of Blind…
 
@@ -321,7 +321,7 @@ Holy nested code, Batman! **Ugh.** I thought promises solved our callback hell? 
 
 We need abstractions that make it easy to adapt promise signatures to callback signatures. Native promises don’t have these abstraction helpers, so the resulting code is often ugly. But it’s something that abstractions can easily make **much better**.
 
-For instance, my _asynquence_ library provides an [`errfcb()` plugin](https://web.archive.org/web/20160315112316/https://github.com/getify/asynquence/tree/master/contrib#errfcb-plugin) (error-first callback) that constructs a callback for you for just such occasions:
+For instance, my _asynquence_ library provides an [`errfcb()` plugin](https://github.com/getify/asynquence/tree/master/contrib#errfcb-plugin) (error-first callback) that constructs a callback for you for just such occasions:
 
 ```js
 function myAjax(url) {
