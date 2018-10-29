@@ -1,4 +1,4 @@
-
+# Promises: The Sync Problem (part 1) {#promises-getify-part-1}
 
 A> This is a multi-part blog post series on the whys and hows and problems of Promises:
 A>
@@ -9,8 +9,6 @@ A> * [Part 4: The Extension Problem](#promises-getify-part-4)
 A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
 
 * * *
-
-# Promises: The Sync Problem (part 1) {#promises-getify-part-1}
 
 In this post, I will explain what motivates the need for a better way (aka, Promises!) to express async flow-control in our programs.
 
