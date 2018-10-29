@@ -8,8 +8,6 @@ A> * [Part 3: The Trust Problem](#promises-getify-part-3)
 A> * [Part 4: The Extension Problem](#promises-getify-part-4)
 A> * [Part 5: The LEGO Problem](#promises-getify-part-5/)
 
-* * *
-
 In this post, I will explain what motivates the need for a better way (aka, Promises!) to express async flow-control in our programs.
 
 ## Async
