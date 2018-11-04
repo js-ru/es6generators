@@ -1,8 +1,8 @@
-# Write Modern Asynchronous Javascript using Promises, Generators, and Coroutines
+# Пишем современный асинхронный Javascript код, используя промисы, генераторы и корутины
 
 ![](https://cdn-images-1.medium.com/max/2000/1*SYxxUFJirsj3BH1-LCsFZw.jpeg)
 
-Over the years, “Callback Hell” is often cited as one of the most hated design patterns in Javascript for managing concurrency. Just in case you’ve forgotten what that looks like, here is an example of a varying and processing a transaction in Express:
+На протяжении многих лет патерн разработки “Callback Hell” (также известный как «The Pyramid of Doom» - прим. переводчика) часто упоминался как один из самых ненавистных в Javascript для управления параллелизмом. На всякий случай, если вы забыли на что это похоже, вот пример измения и обработки данных c использоваанием транзакции в Express:
 
 ```js
 app.post("/purchase", (req, res) => {
@@ -21,9 +21,12 @@ app.post("/purchase", (req, res) => {
 });
 ```
 
-## Promises were supposed to save us…
+## Промисы должны были спасти нас от…
 
-I was told that promises would allow us Javascript developers to write asynchronous code as if it were synchronous by wrapping our async functions in a special object. In order to access the value of the Promise, we call either .then or .catch on the Promise object. But what happens when we try to refactor the above example using Promises?
+Я уже рассказывал, что промисы могут позволить нам JavaScript-разработчикам писать асинхронный код, так как будто мы пишем его синхронно, если обернуть наши асинхронные функции в специальный объект
+
+Чтобы получить доступ к значению промиса, мы вызываем либо `.then`, либо `.catch` у этого промис-объекта. Но что произойдет, когда мы попытаемся реорганизовать приведенный выше пример с помощью промисов?
+
 
 ```js
 // all asynchronous methods have been promisified
@@ -41,13 +44,13 @@ app.post("/purchase", (req, res) => {
 });
 ```
 
-Since each function inside of the callback is scoped, we cannot access the user object inside of the second **_.then_** callback.
+Поскольку каждая функция внутри обратного вызова ограничена ее областью видимостью, мы не можем получить доступ к объекту с описанием пользователя внутри второй функции обратного вызова **_.then_**.
 
-So after a little digging, I couldn’t find an elegant solution, but I did find a frustrating one:
+После небольшого погружения в проблему, я так и не смог найти элегантного решение, но я нашел то, что меня разочаровало:
 
-> Just indent your promises so that they have proper scoping.
+> Просто вложите промисы так, чтобы они имели подходящую область видимости.
 
-Indent my promises!? So its back to the Pyramid of Doom now?
+Вложить свои промисы!? Чтобы снова вернуться к «The Pyramid of Doom»?
 
 ```js
 app.post("/purchase", (req, res) => {
@@ -66,11 +69,12 @@ app.post("/purchase", (req, res) => {
 });
 ```
 
-I would argue that the nested callback version looks cleaner and is easier to reason about than the nested promise version.
+Я бы сказал, что версия c вложенными функциями обратного вызова выглядит более чистой и простой, чем версия с вложенными промисами.
 
-## Async Await Will Save Us!
+## Async Await нас спасут!
 
-The async and await keywords will allow us to write our javascript code as though it is synchronous. Here is code written with those keywords coming in ES7:
+Ключевые слова `async` и `await` позволят писать наш javascript-код, так как будто он синхронный. И этот код написан с их помощью, которые появятся в ES7:
+
 
 ```js
 app.post("/purchase", async function (req, res) {
@@ -83,21 +87,23 @@ app.post("/purchase", async function (req, res) {
 });
 ```
 
-Unfortunately the majority of ES7 features including async/await have not been natively implemented and therefore, require the use of a transpiler. However, you can write code that looks exactly like the code above using ES6 features that have been implemented in most modern browsers as well as Node version 4+.
+К сожалению, большинство функций ES7, включая async/await, не были реализованы нативным образом и поэтому требуют использования транспилятора. Тем не менее, вы можете написать код, который выглядит точно так же, как приведенный выше код, используя функции ES6, которые были реализованы в большинстве современных браузеров, а также в NodeJS 4ой версии и выше.
 
-## The Dynamic Duo: Generators and Coroutines
+## Динамичный дуэт: генераторы и корутины
 
-Generators are a great metaprogramming tool. They can be used for things like lazy evaluation, iterating over memory intensive data sets and on-demand data processing from multiple data sources using a library like RxJs.
+Генераторы - превосходный инструмент для метапрограммирования. Они могут использоваться для таких вещей, как ленивые вычисления, итерирование по большим массивам данных, занимающих большое количество памяти, и обработка данных по требованию из нескольких источников данных с использованием библиотеки RxJs.
 
 However, we wouldn’t want to use generators alone in production code because they forces us to reason about a process over time. And each time we call next, we jump back to our generator like a GOTO statement.
 
-Coroutines understand this and remedy this situation by wrapping a generator and abstracting away all of the complexity.
+Однако мы бы не хотели бы использовать только одни генераторы в производственном коде, потому что они заставляют нас взглянуть на выполнение код как на какой-то длящийся во времени процесс. И каждый раз, когда мы вызываем `next`, мы возвращаемся к нашему генератору, как будто используем оператор GOTO.
 
-## The ES6 version using Coroutine
+Корутины понимают это и исправляют эту ситуацию, обертывая генератор и абстрагируя всю сложность.
 
-I> Coroutines allow us to yield our asynchronous functions one line at a time, making our code look synchronous.
+## Использование корутин в ES6
 
-It’s important to note that I am using the Co library. Co’s coroutine will execute the generator immediately where as Bluebird’s coroutine will return a function that you must invoke to run the generator.
+I> Корутины позволяют нам прерывать наши асинхронные функции на одной строке за раз, делая наш код синхронным.
+
+Важно отметить, что я использую библиотеку Co. Корутина в Co исполняет генератор немедленно, в то время, когда корутина в Bluebird вернет функцию, которую вы должны будете вызвать для запуска генератора.
 
 ```js
 import co from 'co';
@@ -113,23 +119,26 @@ app.post("/purchase", (req, res) => {
 });
 ```
 
-Let’s establish some basic rules to using coroutines:
+Давайте определимся с некоторыми основными правила использования корутин:
 
-1. Any function to the right of a **yield** must return a Promise.
-1. If you want to execute your code now, use **co**.
-1. If you want to execute your code later, use **co.wrap**.
-1. Make sure to chain a **.catch** at the end of your coroutine to handle errors. Otherwise, you should wrap your code in a try/catch block.
-1. Bluebird’s **Promise.coroutine** is the equivalent to Co’s **co.wrap** and not the co function on it’s own.
+1. Любая функция справа от **yield** должна вернуть промис.
+2. Если вы хотите выполнить свой код в текущий момент времени, используйте **co**.
+3. Если вы хотите выполнить свой код позже, используйте **co.wrap**.
+4. Убедитесь, что цепочка **.catch** находится в конце вашей корутины для обработки ошибок. В противном случае вы должны обернуть свой код в блок try/catch.
+5. Корутина **Promise.coroutine** из библиотеки `Bluebird` эквивалентна корутине **co.wrap** из библиотеки `Co`, но не функции `co`.
 
-## What if I want to run multiple processes concurrently?
 
-You can either use objects or arrays with the yield keyword and then destructure the result.
+## Что делать, если я хочу выполнить несколько одновременных процессов?
 
-### This example is specific to the Co library
+Вы можете использовать или объекты или массивы с ключевым словом yield, а затем разрушить (destructure) результат.
+
+### Пример характерный для библиотеки Co
 
 ```js
+// Библиотека Co
 import co from 'co';
-// with objects
+
+// с объектами
 co(function*() {
     const {user1, user2, user3} = yield {
         user1: user.findOneAsync({name: "Will"}),
@@ -138,7 +147,7 @@ co(function*() {
     };
 ).catch(err => handleError(err))
 
-// with arrays
+// с массивами
 co(function*() {
     const [user1, user2, user3] = yield [
         user.findOneAsync({name: "Will"}),
@@ -148,13 +157,13 @@ co(function*() {
 ).catch(err => handleError(err))
 ```
 
-### This is an example using the Bluebird library
+### Пример использования библиотеки Bluebird
 
 ```js
-// with the Bluebird library
+// Библиотека Bluebird
 import {props, all, coroutine} from 'bluebird';
 
-// with objects
+// с объектами
 coroutine(function*() {
     const {user1, user2, user3} = yield props({
         user1: user.findOneAsync({name: "Will"}),
@@ -163,7 +172,7 @@ coroutine(function*() {
     });
 )().catch(err => handleError(err))
 
-// with arrays
+// с массивами
 coroutine(function*() {
     const [user1, user2, user3] = yield all([
         user.findOneAsync({name: "Will"}),
@@ -172,7 +181,7 @@ coroutine(function*() {
     ]);
 )().catch(err => handleError(err))
 ```
-## Libraries that you can use today:
+## Библиотеки, которые можно использовать уже сегодня:
 
 - [Promise.coroutine | bluebird](http://bluebirdjs.com/docs/api/promise.coroutine.html)
 - [co](https://www.npmjs.com/package/co)
