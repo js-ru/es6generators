@@ -1,6 +1,6 @@
-# The Hidden Power of ES6 Generators: Observable Async Flow Control
+# 7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript
 
-*Перевод статьи Eric Elliott: [The Hidden Power of ES6 Generators: Observable Async Flow Control](https://medium.com/javascript-scene/the-hidden-power-of-es6-generators-observable-async-flow-control-cfa4c7f31435)*
+*Перевод статьи Eric Elliott: [The Hidden Power of ES6 Generators: Observable Async Flow Control](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710)*
 
 *Дата публикации: 21.05.2016*
 
