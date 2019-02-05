@@ -4,7 +4,7 @@
 
 *Дата публикации: 21.05.2016*
 
-![The turbine room of the Volga Hydroelectric Station — Kent Kanouse (CC BY-NC 2.0)](images/turbine.jpeg)
+![Nautilus Shell — Dave Spindle (CC-BY-NC-2.0)](images/fibonacci.jpeg)
 
 In [7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710), I covered one obvious use-case for ES6 generator functions: producing iterable sequences of values one at a time. If you haven’t read that yet, you should. Iterables are the foundation of a lot of things in ES6+, and it’s going to be important for you to understand how they work.
 

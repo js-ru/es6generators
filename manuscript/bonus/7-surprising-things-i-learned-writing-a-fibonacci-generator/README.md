@@ -1,10 +1,10 @@
 # 7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript
 
-*Перевод статьи Eric Elliott: [The Hidden Power of ES6 Generators: Observable Async Flow Control](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710)*
+*Перевод статьи Eric Elliott: [7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710)*
 
-*Дата публикации: 21.05.2016*
+*Дата публикации: 15.05.2016*
 
-![Nautilus Shell — Dave Spindle (CC-BY-NC-2.0)](images/fibonacci.jpeg)
+![The turbine room of the Volga Hydroelectric Station — Kent Kanouse (CC BY-NC 2.0)](images/turbine.jpeg)
 
 Generator functions are a new feature of JavaScript introduced in ES6. To explore them deeper, I decided to write a fibonacci generator function.
 
