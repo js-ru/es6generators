@@ -1,54 +1,55 @@
-# 7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript
+# 7 выводов, которые я сделал, когда писал генератор последовательности Фибоначчи на JavaScript
 
 *Перевод статьи Eric Elliott: [7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710)*
 
 *Дата публикации: 15.05.2016*
 
-![The turbine room of the Volga Hydroelectric Station — Kent Kanouse (CC BY-NC 2.0)](images/turbine.jpeg)
+![Раковина наутилуса — Dave Spindle (CC-BY-NC-2.0)](images/fibonacci.jpeg)
 
-Generator functions are a new feature of JavaScript introduced in ES6. To explore them deeper, I decided to write a fibonacci generator function.
+Генераторы — это новый вид функций в JavaScript, введенный в ES6. Чтобы подробнее изучить их, я решил написать функцию генератора Фибоначчи.
 
-Here’s what I learned.
+Вот что я узнал.
 
-## Adopting New Features
+## Новые функции 
 
-Sometimes a new language feature comes along and I jump all over it and start using it all the time. That’s what happened with several other ES6 features. I made a list of my favorite ES6 features, and called it the ROAD MAP:
+Если в языке появляется новая функциональная возможность (она же _фича_), я сразу же изучаю ее и начинаю активно использовать: так произошло и с несколькими возможностями ES6. Я составил список любимых фич ES6 и назвал его [ROAD MAP](https://ericelliottjs.com/product/es6-the-road-map-2-hour-webcast-recording/):
 
-- **R** Rest & Spread
-- **O** Object Literal Shortcuts (compact literals)
-- **A** Arrow Functions
-- **D** Destructuring & Default Parameters
+- **R** Операторы Rest/Spread
+- **O** Объектные литералы
+- **A** Стрелочные функции
+- **D** Деструктуризация и параметры по умолчанию
 - —
-- **M** Modules
-- **A** Asynchronous **P** Programming (promises & generators)
+- **M** Модули
+- **A** Асинхронное программирование **P** (промисы и генераторы)
 
-When I made the list, I thought these were the ES6 features I would use most. Initially, I was very excited about generators, but now that I’ve been living with them for a while, I haven’t found a lot of good use cases for generators in my real application code. For most use-cases I might use generators for, I reach for [RxJS](https://github.com/Reactive-Extensions/RxJS) instead because of it’s much richer API.
 
-That doesn’t mean that generators don’t have lots of good use-cases. I tell myself I’ve been waiting for better JS engine support before I really go crazy with them, but it could be my mind simply isn’t thinking in terms of generators yet. The best way to fix that is to get more practice with them.
+Когда я составлял список, мне казалось, что это самые полезные возможности ES6. Сначала меня заинтересовали генераторы, но я изучил их подробнее и нашел довольно мало способов применить их при написании реального кода приложения. В большинстве случаев я использую [RxJS](https://github.com/Reactive-Extensions/RxJS) вместо генераторов, потому что у него намного более богатый API.
 
-One of the use cases that immediately jumped into my mind when I heard about generators is that we might use them to grab values from any infinite series. That could have many applications, such as generative algorithms for graphics, computer game levels, music sequences, etc…
+Это не означает, что генераторы негде применить. Я все жду, когда в движке JS появится улучшенная поддержка генераторов. Может быть я просто не могу придумать применение генераторам? Лучший способ это исправить — больше практиковаться.
 
-## What is the Fibonacci Sequence?
+Первый способ, который сразу же пришел мне в голову, когда я узнал про генераторы— их можно использовать для захвата значений из любого бесконечного ряда. Этот способ можно применить во множестве сфер: при обработке графических алгоритмов и уровней компьютерных игр, в музыкальных секвенсорах и т. д.
 
-Fibonacci is a simple, canonical example that most of you are probably already familiar with. Here are the basics:
+## Что такое последовательность Фибоначчи?
 
-The fibonacci sequence is the series of numbers:
+Фибоначчи — простой, канонический пример, который, скорее всего, вам уже знаком.
+
+Последовательность Фибоначчи представляет собой ряд чисел:
 
 *0, 1, 1, 2, 3, 5, 8, 13, 21, 34…*
 
-After the seed numbers, *0* and *1*, each successive number is the sum of the previous two numbers. One of the interesting properties of the sequence is that the ratio of the current number to the previous number in the sequence converges toward the golden ratio, *1.61803398875…*
+После *0* и *1*, начальных значений, каждое последующее число представляет собой сумму двух предыдущих чисел. Интересное свойство этой последовательности в том, что отношение текущего числа к предыдущему числу в последовательности равняется *1.61803398875…*, то есть золотому соотношению.
 
-You can use the Fibonacci sequence to generate all sorts of interesting things, like the Golden Spiral, which occurs in nature.
+Последовательность Фибоначчи можно использовать, чтобы генерировать разные интересные вещи: например, Золотую спираль, которая встречается в природе.
 
-## What is a Generator Function?
+## Что такое функция-генератор?
 
-Generator functions are a new feature in ES6 that allow a function to *generate many values over time* by returning an object which can be iterated over to pull values from the function one value at a time.
+Функции генератора — это новая возможность в ES6, позволяющая функции *генерировать множество значений на протяжении определенного времени*, путём возврата объекта, который можно перебрать для получения из него по одному значению за раз.
 
-When the generator function is called, instead of directly returning a value, it returns an iterator object.
+Если вместо прямого возврата значения мы используем функцию-генератор, то она возвращает объект-итератор.
 
-### The Iterator Protocol
+### Протокол «Итератор»
 
-The iterator object has a `.next()` method. When the `.next()` method is called, the function body resumes after the line that was executed the last time `.next()` was called. It continues execution until a `yield` is reached, at which point, it returns an object like this:
+Объект-итератор использует метод `.next ()`. При использовании этого метода, тело функции возобновляется после последней строки, в которой был использован `.next ()`. Так продолжается до тех пор, пока не будет достигнута выражение `yield`, и в этот момент возвращается такой объект:
 
 ```js
 {
@@ -57,19 +58,19 @@ The iterator object has a `.next()` method. When the `.next()` method is called,
 }
 ```
 
-The `value` property contains the yielded value, and `done` indicates whether or not the generator has yielded its last value.
+Свойство `value` содержит возвращённое (yielded) значение, а `done` указывает, действительно ли генератор выдал последнее значение.
 
-The iterator protocol is used by a lot of things in JavaScript, including the new `for…of` loop, the array rest/spread operator, and so on.
+Протокол «Итератор» активно используется в JavaScript: в новом цикле `for…of`, стрелочных функциях, операторах rest/spread и т.д.
 
-## 1. Generators Don’t Like Recursion
+## 1. Генераторам не нравится рекурсия
 
-I’m in the habit of worrying about recursion in JavaScript. When a function calls another function, a new stack frame is allocated to store the state of the function’s data. Infinite recursion can lead to memory problems because there is a limit to how many stack frames can be allocated. When you hit those limits, it causes a stack overflow.
+Я часто беспокоюсь насчет рекурсии в JavaScript. Если функция вызывает другую функцию, для хранения состояния данных функции выделяется новый стековый кадр. Бесконечная рекурсия может привести к проблемам с памятью, поскольку существует ограничение на количество стековых кадров. Если это максимальное число стековых кадров превышено, происходит переполнение стека.
 
-A stack overflow is like the cops raiding your party and telling all your friends to go home. Total buzz kill.
+Переполнение стека похоже на полицию, которая приезжает на вечеринку и требует разойтись по домам. Это портит все веселье.
 
-I was very excited when ES6 introduced tail call optimization, which lets a recursive function reuse the same stack frame for every iteration — but it only works when the recursive call is in the tail position. A call in tail position means that the function returns the result of the recursive call without any further computation.
+Я был рад, когда в ES6 появилась оптимизация хвостового вызова, которая позволяет рекурсивной функции повторно использовать один и тот же стековый кадр для каждой итерации. Однако оптимизация работает только, когда вызов с рекурсией находится в хвостовой позиции, то есть, если функция возвращает результат вызова с рекурсией без каких-либо дальнейших вычислений.
 
-Great! My first naive implementation uses a pretty straightforward twist on the canonical mathematical fibonacci definition:
+Отлично! Это моя первая примитивная реализация: она основана на каноническом математическом определении последовательности Фибоначчи:
 
 ![](images/fibonacci-1.png)
 
@@ -86,29 +87,29 @@ function* fib (n, current = 0, next = 1) {
 }
 ```
 
-I love how clean this looks. The seed values are obvious in the function signature and the formula is expressed quite clearly in the recursive call.
+Мне нравится, насколько понятно получилось. Начальные значения видны в сигнатуре функции, в рекурсивном вызове видна формула.
 
-The `if` condition allows the loop to terminate by using `return` instead of `yield` when `n` reaches 0. If you don’t pass `n`, it will be `undefined` and evaluate to `NaN` when we try to subtract `1` from it, so the function will never terminate.
+Условие `if` позволяет завершить цикл, используя` return` вместо `yield`, если` n` достигнет нуля. Если цикл не достигнет`n`, он будет обозначен как `undefined`. Если мы пытаемся вычесть `1`, то получим результат `NaN`, поэтому функция никогда не прекратится.
 
-This implementation is very straightforward… and naive. When I tested in on large values, it exploded.
+Эта реализация очень проста и примитивна. Когда я начал тестировать ее с большими значениями, она не сработала.
 
 (ಥ﹏ಥ)
 
-Sadly, **tail call optimization does not apply to generators**. In the specification under function call [Runtime Semantics: Evaluation](https://tc39.github.io/ecma262/#sec-function-calls):
+К сожалению, **оптимизация хвостовых вызовов не распространяется на генераторы**. В спецификации вызова функции [Runtime Semantics: Evaluation](https://tc39.github.io/ecma262/#sec-function-calls) написано:
 
-7. Let `tailCall` be `IsInTailPosition(thisCall)`.
+7. Пусть `tailCall` будет `IsInTailPosition(thisCall)`.
 
-8. Return `EvaluateDirectCall(func, thisValue, Arguments, tailCall)`.
+8. Возврат `EvaluateDirectCall(func, thisValue, Arguments, tailCall)`.
 
-**IsInTailPosition** returns false for generators (see [14.6.1](https://tc39.github.io/ecma262/#sec-tail-position-calls)):
+**IsInTailPosition** возвращает значение `false` для генераторов(см.[14.6.1](https://tc39.github.io/ecma262/#sec-tail-position-calls)):
 
-5. If `body` is the `FunctionBody` of a `GeneratorBody`, return `false`.
+5. Если `body` является `FunctionBody` по отношению к `GeneratorBody`, возвращается значение `false`.
 
-In other words, **avoid recursion for infinite generators**. You need to use the iterative form instead if you want to avoid stack overflows.
+Другими словами, **избегайте рекурсии в бесконечных генераторах**. Вместо этого используйте итеративную форму, если хотите избежать переполнения стека.
 
-> **Edit:** For several months I was enjoying tail call optimization in Babel, but it has since been removed. As far as I know at the time of this writing, [only Webkit (Safari, Mobile Safari) supports the new ES6 proper tail calls, due to controversy/difficulty](https://kangax.github.io/compat-table/es6/) raised by engine implementers.
+> **Поправка**: Несколько месяцев назад мне нравилась оптимизация хвостовых вызовов в Babel, но впоследствии ее удалили. Насколько я знаю, сейчас [только Webkit (Safari, Mobile Safari) поддерживает новые хвостовые вызовы ES6 из-за проблем с разработчиками движка](https://kangax.github.io/compat-table/es6/).
 
-With a little modification, we can remove the recursion and use an iterative form instead:
+Немного изменив код, мы можем удалить рекурсию и вместо нее использовать итеративную форму:
 
 ```js
 function* fib (n) {
@@ -123,31 +124,31 @@ function* fib (n) {
 }
 ```
 
-As you can see, we’re still doing the same variable swap that was in the original function call signature, but this time we’re using destructuring assignment to accomplish it inside a while loop. We need `isInfinite` in the generator in case we don’t pass a limit.
+Как вы видите, мы по-прежнему выполняем тот же самый обмен значениями переменных, что и в исходной сигнатуре вызова функции. Однако на этот раз мы используем деструктурирующее присваивание внутри цикла while. Нам нужен использовать `isInfinite` в генераторе, если мы не достигнем предела.
 
-## 2. Let the Parameters Limit Iterations
+## 2. Установка предельного числа итераций
 
-It’s possible to extract an array from your generator using a combination of destructuring assignment and the …rest syntax:
+Можно извлечь массив из генератора, используя деструктурирующее присваивание и rest-синтаксис:
 
 ```js
 const [...arr] = generator(8);
 ```
 
-But if your generator is an infinite series and there’s no way to describe a limit by passing a parameter, the resulting array will never stop filling.
+Но если генератор в вашем случае представляет собой бесконечный ряд, и вы не можете задать лимит через параметры, полученный массив не прекратит заполняться.
 
-In both of the Fibonacci implementations above, we allow the caller to pass `n`, which limits the sequence to the first `n` numbers. All good!
+В обеих описанных выше реализациях последовательности Фибоначчи мы разрешаем инициатору вызова пройти `n`, который ограничивает последовательность до первых чисел `n`. Все хорошо!
 
 ┬─┬ ノ( ゜-゜ノ)
 
-## 3. Be Careful with Memoized Functions
+## 3. Будьте осторожнее с мемоизацией функций
 
-It’s very tempting to memoize something like the Fibonacci sequence, because doing so can dramatically decrease the number of required iterations. In other words, it makes it **a lot faster**.
+Очень заманчивая идея — мемоизировать что-то похожее на последовательность Фибоначчи: мемоизация значительно уменьшит количество требуемых итераций. Другими словами, она **сильно ускоряет процесс**.
 
-### What’s a Memoized Function?
+### Что такое мемоизация?
 
-For functions which always produce the same output given the same arguments, you can record the results in a memo for future calls so that the work of calculating the results doesn’t have to be repeated. Instead, the result is looked up in the memo and returned without repeating the calculation. The Fibonacci algorithm repeats lots of calculations to come up with results, which means that if we memoize the function, we can save a lot of time.
+Существуют функции, которые всегда производят один и тот же вывод с теми же аргументами. Результаты этих функций можно записать в память и использовать в дальнейшем, чтобы работа по вычислению результатов не повторялась. Вместо повторного вычисления результат этой функции возвращается из памяти. Чтобы выдать результаты, алгоритм Фибоначчи повторяет множество вычислений: если мемоизировать эту функцию, можно сэкономить много времени.
 
-Let’s look at how we can memoize the iterative form of the Fibonacci generator:
+Давайте посмотрим, как можно мемоизировать итеративную форму генератора Фибоначчи:
 
 ```js
 const memo = [];
@@ -174,21 +175,21 @@ function* gen (n = 79) {
 export default gen;
 ```
 
-Because `n` essentially represents an index into an array of numbers, we can use it as a literal array index. Subsequent calls will just look up that index and return the corresponding result value.
+Поскольку `n` по существу представляет индекс в массиве чисел, мы можем использовать его в качестве индекса ассоциативного массива. Последующие вызовы будут просто искать этот индекс и возвращать соответствующее значение результата.
 
-### Edit:
+### Поправка:
 
-The original version of this code contained a bug. The first time you would run the function, everything would work just fine, but the memo was written incorrectly because you can’t just yield a value when you find a memo hit — unlike `return`, `yield` does not stop the rest of the function from running. It simply pauses execution until `.next()` gets called again.
+Исходная версия этого кода содержала ошибку. В первый раз, когда вы запустили эту функцию, все будет работать нормально, но мемоизация была проведена неправильно. Вы не сможете просто задать значение— в отличие от `return`, ` yield` не останавливает запуск остальных функций. Он просто приостанавливает выполнение до тех пор, пока команда `.next ()` не будет вызвана снова.
 
-This has been the hardest point for me to wrap my head around. `yield` is not just `return` for generators. You also have to think carefully about how resuming the function with `next()` impacts the way you write the logic.
+Разобраться с этим моментом было довольно сложно. `yield` — это не просто `return` для генераторов. В данном случае нужно придумать, как именно возобновить функции с помощью next ().
 
-In this case, I was able to get the logic working using `yield`, but it made the control flow hard to read.
+В этом случае я использовал `yield`, но это затрудняло чтение потока управления.
 
-It occurred to me that for something that can be memoized this way, it’s much easier for me to read when I separate the generator function from the calculation logic.
+Чтобы облегчить чтение, я отделяю функцию генератора от потока управления при мемоизации.
 
-As you can see, the new generator function is extremely simple — it simply calculates the memo array by calling the memoized `fib()`, and then delegates the generator to the resulting array iterable using `yield*`.
+Как вы можете видеть, новая функция генератора чрезвычайно проста — она ​​просто вычисляет массив memo, вызывает из памяти `fib()`, а затем делегирует генератор полученному итерируемому массиву, используя `yield *`.
 
-`yield*` is a special form of `yield` that will delegate to another generator or iterable. For example:
+`yield *` — это специальная форма `yield`, которая будет делегировать другой или итерируемому генератору. Например:
 
 ```js
 const a = [1, 2, 3];
@@ -211,31 +212,31 @@ const [...sequence] = gen();
 console.log(sequence); // [1,2,3,4,5,6,7,8,9,10]
 ```
 
-### Benchmarks
+### Производительность (бенчмарки)
 
-Whenever I’m playing with competing algorithm implementations, I usually write a simple benchmark script to compare the performance.
+Всякий раз, когда я работаю с конкурирующими реализациями алгоритмов, я обычно пишу простой тестовый скрипт для сравнения производительности.
 
-For this test, I generated 79 numbers, each. I used Node’s `process.hrtime()` to record nanosecond-accurate timings for both implementations, ran the test three times, and averaged the results:
+В этом случае я сгенерировал по 79 чисел. Я использовал Node-процесс `process.hrtime()` для записи точных таймингов для обеих реализаций, протестировал три раза и усреднил результаты:
 
 ![](images/fibonacci-2.png)
 
-As you can see, that’s quite a significant difference. If you’re generating a lot of numbers and you want it to be fast, the memoized solution is clearly a wise choice.
+Как видите, разница довольно значительная. Если вы хотите быстро сгенерировать много чисел, выбирайте мемоизацию.
 
-There’s just one problem: With an infinite series, the memo array will have unbounded growth. Eventually, you’re going to run into heap size limits, and that will crash the JS engine.
+Есть одна проблема: в случае с бесконечным рядом массив memo будет расти. В конце концов, вы столкнетесь с лимитом размера динамической памяти, и это приведет к сбою JS-движка.
 
-No worries though. With Fibonacci, you’ll run into the maximum exact JavaScript integer size first, which is *9007199254740991*. That’s over **9 quadrillion**, which is a big number, but Fibonacci isn’t impressed. Fibonacci grows _**fast**_. You’ll burst that barrier after generating only 79 numbers.
+Не беспокойтесь. В случае с последовательностью Фибоначчи вы столкнетесь с максимальным точным размером целого числа в JavaScript, который составляет *9007199254740991*. Это более **9 квадриллионов** — это довольно большое число, **но не для последовательности Фибоначчи**: до 9 квадриллионов вы доберетесь, сгенерировав всего 79 чисел.
 
-## 4. JavaScript Needs a Builtin API for Precise Timing
+## 4. JavaScript нужно встроенное API для точного расчета времени
 
-Every time I write a simple benchmark script, I wish for a precision timing API that works in both browsers and Node, but there isn’t one. The closest we can get is a library that provides a facade that wraps both the browser’s `performance.now()` API and Node’s `process.hrtime()` API to present a unified API. Realistically, though, Node-only benchmarks are enough for this test.
+Каждый раз, когда я пишу простой тестовый скрипт, я хочу, чтобы API-интерфейс с точной синхронизацией работал как в браузерах, так и в Node. Однако, таких интерфейсов нет. Самое подходящее решение — библиотека, которая предоставляет интерфейс, который объединяет API браузера `performance.now()` и API Node `process.hrtime()`, чтобы в конечном счете иметь единый API. Однако в этом случае достаточно только тестов Node.
 
-My only complaint is that Node’s `process.hrtime()` returns an array instead of a straightforward value in nanoseconds. This is easily remedied, though:
+Единственная проблема в том, что `process.hrtime()` для Node возвращает массив вместо простого значения в наносекундах. Это, однако, легко поправить:
 
 ```js
 const nsTime = (hrtime) => hrtime[0] * 1e9 + hrtime[1];
 ```
 
-Just pass the array returned from `process.hrtime()` to this function and you’ll get human-friendly nanoseconds back. Let’s take a look at the benchmark script I used to compare the iterative Fibonacci generator to the memoized version:
+Просто верните в эту функцию массив с помощью `process.hrtime ()` и вы получите привычные нам наносекунды. Давайте посмотрим на тестовый скрипт, который я использовал для сравнения итерационного генератора Фибоначчи с версией из памяти:
 
 ```js
 import iterativefib from 'iterativefib';
@@ -271,15 +272,15 @@ const profile = () => {
 profile();
 ```
 
-My favorite feature of `hrtime()` is that you can pass the start time into the function to get the time elapsed since the start time — exactly what you need for profiling.
+С помощью моей любимой функции `hrtime()` можно передать время начала в функцию, чтобы получить время, прошедшее с момента запуска — именно это и нужно для профилирования.
 
-Sometimes, processes can encounter some terrible luck with the OS task scheduler, so I like to run scripts like this multiple times and average the results.
+Иногда процессам везет с планировщиком задач ОС: поэтому подобные скрипты я запускаю несколько раз и усредняю результаты.
 
-I’m certain you could come up with much more accurate ways to benchmark your code, but something like this should be good enough for most situations — especially when there is such a clear winner like the memoized Fibonacci implementation.
+Я уверен, что есть более точные способы сравнить свой код, но мой метод подходит для большинства ситуаций, особенно для сравнения реализаций последовательности Фибоначчи.
 
-## 5. Beware of Floating Point Precision Errors
+## 5. Избегайте случайных ошибок точности с плавающей точкой
 
-I don’t want to bore you with too much crazy math, but did you know that there’s a very efficient way to calculate Fibonacci without iterations or recursion? It looks like this:
+Я не хочу утомлять вас слишком сложной математикой, но знаете ли вы, что существует очень эффективный способ вычисления Фибоначчи без итераций или рекурсии? Он выглядит так:
 
 ```js
 const sqrt = Math.sqrt;
@@ -294,11 +295,11 @@ const fibCalc = n => Math.round(
 );
 ```
 
-The only problem is the limitation of floating point precision. The actual formula does not include any rounding. I added it because floating point errors start to cause the results to drift after `n = 11`. Not very impressive.
+Единственная проблема — ограничение точности плавающей точки. Фактическая формула не включает округление. Я добавил его, потому что ошибки с плавающей точкой начинают приводить к искажению результатов после `n = 11`. Не впечатляет.
 
-The good news is that by adding rounding, we can increase the accuracy to `n = 75`. Much better. That’s just a few numbers shy of the maximum precise value using JavaScript’s native `Number` type, which we discovered earlier is `n = 79`.
+Хорошая новость: если добавить округление, можно повысить точность до `n = 75`. Намного лучше. Это всего лишь несколько цифр, около максимального точного значения ` n = 79`.
 
-So, as long as we don’t need values higher than `n = 75`, this faster formula will work great! Let’s turn it into a generator:
+Итак, до значения `n = 75`, эта быстрая формула работает отлично! Давайте превратим ее в генератор:
 
 ```js
 const sqrt = Math.sqrt;
@@ -323,7 +324,7 @@ function* fib (n) {
 }
 ```
 
-Looks good. Let’s look at a benchmark run:
+Выглядит хорошо. Давайте посмотрим бенчмарк:
 
 ```
 Profile with 79 numbers
@@ -332,19 +333,19 @@ Profile with 79 numbers
     formula:  311068ns
 ```
 
-Faster, yes, but we’ve lost our last few accurate numbers. Worth the tradeoff?
+Да, так быстрее, но мы потеряли точность нескольких последних цифр. Стоит ли идти на такой компромисс?
 
 ¯\(º_o)/¯
 
-## 6. Know Your Limits
+## 6. Понимайте свои ограничения
 
-Before I started:
+Прежде, чем я начну:
 
-- I had no idea how many accurate values I could produce in this series using the standard JavaScript `Number` type.
-- I had no idea how many accurate values I could produce with the formula version.
-- I had no idea how many recursive calls I’d make to produce those accurate values.
+- Я понятия не имел, сколько точных значений можно было бы сгенерировать, используя стандартный JavaScript-тип `Number`.
+- Я понятия не имел, сколько точных значений можно сгенерировать с помощью этой версии формулы.
+- Я понятия не имел, сколько рекурсивных вызовов понадобится, чтобы получить настолько точные значения.
 
-But now that I know all these limits, the best implementation so far is one I haven’t shown you, yet:
+Но теперь, я понимаю все эти ограничения. На данный момент эта реализация показала себя лучше всего:
 
 ```js
 const lookup = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610,
@@ -366,11 +367,11 @@ function* fib (n = 79) {
 }
 ```
 
-Most of the times I’ve used an infinite series in a real application, I actually needed a limited number of values for a specific purpose (usually generating graphics). Most of the time it was faster to grab values from a **lookup table** than it would have been to compute the values. In fact, this was a frequent optimization used in computer games in the 80’s and 90’s. It probably still is.
+В большинстве случаев, если я использую бесконечный ряд на практике, в реальном приложении, мне требуется ограниченное количество значений для определенной цели (обычно для создания графики). В большинстве случаев быстрее всего взять значения из **таблицы поиска**, а не вычислять их. Фактически, такую оптимизацию часто использовали в компьютерных играх 80-х и 90-х годов. Вероятно, она используется и сейчас.
 
-Since arrays are iterables in ES6 and already behave like generators by default, we can simply delegate to the lookup table using `yield*`.
+Поскольку массивы в ES6 являются итерируемыми и уже по умолчанию работают как генераторы, мы можем просто работать с таблицей поиска с помощью `yield *`.
 
-Not surprisingly, this is the fastest implementation of the bunch, by a large margin:
+Неудивительно, что это самая быстрая реализация в данном случае:
 
 ```
 Profile with 79 numbers
@@ -380,7 +381,7 @@ Profile with 79 numbers
     lookup:   191683ns
 ```
 
-Looking back, I’m pretty sure that as long as we limited the series to accurate values, the callstack would be no problem… a slightly modified recursive version would probably do just fine:
+Сейчас я почти уверен, что без ограничения серии точными значениями, стек вызовов работает исправно. Слегка измененная рекурсивная версия, вероятно, тоже сработает:
 
 ```js
 const memo = [0, 1];
@@ -398,27 +399,27 @@ function* gen (n = 79) {
 export default gen;
 ```
 
-This one is my favorite of the bunch. The seed values can go in the memo, leaving the actual calculation about as close as you can get to the mathematical recurrence relation: _Fn = Fn-1 + Fn-2_
+Начальные значения можно добавить в память, приблизив фактический расчет к математическому рекуррентному соотношению: _Fn = Fn-1 + Fn-2_
 
-For the generator we’re just delegating to the memo array again.
+Генератору мы просто делегируем массив memo.
 
-### Limits to Watch
+### Какие ограничения нужно принимать во внимание?
 
-- If you use a formula that utilizes floating point math, you should definitely test the limits of its accuracy.
-- If you’re using a series that grows exponentially, you should figure out how much of the series you can produce before you run into the limitations of the JS `Number` type.
-- If your limits are small enough, consider pre-generating a lookup table to speed up your production app.
+- Если вы используете формулу с плавающей точкой, нужно обязательно проверить пределы точности.
+- Если вы используете экспоненциально растущий ряд, нужно выяснить, когда будет достигнут лимит JS-типа `Number`.
+- При низком лимите, предварительного сгенерируйте таблицу поиска, чтобы ускорить производительность приложения.
 
-If you decide you need larger accurate numbers than JavaScript can represent natively, you’re not entirely out of luck. There are arbitrary size integer libraries available, such as [BigInteger](https://github.com/peterolson/BigInteger.js).
+Если вам нужны более точные числа, чем те, что JavaScript может представить изначально, у вас есть такая возможность: воспользуйтесь библиотеками целочисленного размера произвольного размера, такими как [BigInteger](https://github.com/peterolson/BigInteger.js).
 
-## 7. Lots of Things Act Like Generators
+## 7. Многие функции работают как генераторы
 
-When the generator functions were introduced in ES6, a lot of other builtin things also implemented the **iterator protocol** (the thing that gets returned from the generator that can be iterated over).
+Когда функции генератора были введены в ES6, во многих других встроенных функциях также был реализован **протокол итератора** (возврат из генератора, который может быть повторен).
 
-More precisely, they implemented the **iterable protocol**. `String`, `Array`, `TypedArray`, `Map` and `Set` are all builtin iterables, which means they all have a `[Symbol.iterator]` property that is not enumerable.
+Точнее, в них реализован протокол итерации. `String`,` Array`, `TypedArray`,` Map` и `Set` содержат встроенный протокол итерации, что означает, что все они имеют перечислимое свойство `[Symbol.iterator]`.
 
-In other words, you can now iterate over any array-like builtin object using the iterator `.next()` method.
+Другими словами, теперь можно перебирать любой объект, подобный массиву, используя метод итератора `.next()`.
 
-Here’s how you can access an array iterator. The technique is the same for anything that implements the iterable protocol:
+Таким образом можно получить доступ к итератору массива. Техника такая же для всего, что реализует итерируемый протокол:
 
 ```js
 let arr = [1,2,3];
@@ -432,7 +433,7 @@ console.log(foo.next());
 // { value: undefined, done: true }
 ```
 
-You can even build your own custom iterables:
+Также есть возможность создавать собственные пользовательские итерации:
 
 ```js
 const countToThree = {
@@ -454,7 +455,7 @@ let [...three] = countToThree;
 console.log(three); // [ 1, 2, 3 ]
 ```
 
-And even redefine builtin iterable behaviors, but beware — I’m seeing inconsistent behavior between Babel and V8:
+Можно даже переопределять встроенные итеративные поведения, но будьте осторожны — встречается непоследовательное поведение между Babel и V8:
 
 ```js
 const abc = [1,2,3];
@@ -486,19 +487,19 @@ abc.forEach(c => console.log(c));
 */
 ```
 
-I thought it might be convenient to write a function that’s basically a shortcut for `arr[Symbol.iterator]()`, so I made one and gave it a fun slicing API so you can easily grab chunks of an array and turn them into iterators. I called it arraygen. You can [browse arraygen on GitHub](https://github.com/ericelliott/arraygen).
+Я подумал, что было бы удобно написать функцию-ярлык для `arr[Symbol.iterator]()`. Я создал функцию-ярлык с API-интерфейсом, чтобы можно было захватывать куски массива и превращать их в итераторы. Я назвал его arraygen, вы можете найти [его на GitHub](https://github.com/ericelliott/arraygen)).
 
-## Conclusion
+## Заключение
 
-Hopefully I hit on some stuff you might not have known about generators. I went off on a couple interesting tangents, too:
+Надеюсь, я затронул некоторые вещи, которые вы, возможно, не знали о генераторах. Я также хотел бы упомянуть пару интересных моментов:
 
-- **Avoid recursion.** Generators don’t get optimized tail calls.
-- **Allow parameters to limit the length of your generators**, and you can use the …rest operator to destructure them.
-- **Memoized infinite generators can blow the heap size limits.**
-- **JavaScript has two competing APIs for precise timings.** Why can’t we all work together? (ಥ﹏ಥ)
-- **Floating point precision errors can trip up formula-based infinite generators.** Be careful.
-- **Know your limits.** Does your generator have enough runway to satisfy the needs of your application? Is it accurate enough over the span of that runway? Are you going to run into limitations of the data type you’re using? Will the JS engine have enough memory to keep your generator running as long as you want it to?
-- **Most of the builtins behave a bit like generators** with the iterable protocol, and you can define your own custom iterables.
+- **Избегайте рекурсии**. Генераторы не оптимизируют хвостовые вызовы.
+- **Задайте лимит длины генераторов** и используйте оператор … rest, чтобы превысить лимит.
+- **Используйте мемоизацию бесконечных генераторов, чтобы ограничить размер динамической памяти**. 
+- **JavaScript имеет два конкурирующих API для точного расчета времени**. Почему мы не можем работать вместе? (ಥ﹏ಥ)
+- **Ошибки точности с плавающей точкой могут отключать бесконечные генераторы на основе формулы**. Здесь нужно быть внимательнее.
+- **Понимайте свои ограничения**. Подходит ли используемый вами генератор для вашего приложения? Достаточно ли точен этот генератор на протяжении всей выборки? Столкнетесь ли вы с ограничениями типа используемых данных? Будет ли у JS-накопителя достаточно памяти, чтобы генератор работал, сколько нужно?
+- **Большинство встроенных функций ведут себя как генераторы** с итерируемым протоколом: также можно добавить свои собственные пользовательские итерации.
 
-If you want to play with the Fibonacci examples, you can[ clone the full source from GitHub](https://github.com/learn-javascript-courses/fibonacci).
+Если вы хотите подробнее ознакомиться с примерами Фибоначчи, [склонируйте полный пример из GitHub](https://github.com/learn-javascript-courses/fibonacci).
 
