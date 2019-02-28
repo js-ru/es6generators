@@ -1,24 +1,25 @@
-# The Hidden Power of ES6 Generators: Observable Async Flow Control
+# Скрытая сила генераторов ES6: Управление асинхронным потоком через Observable
 
 *Перевод статьи Eric Elliott: [The Hidden Power of ES6 Generators: Observable Async Flow Control](https://medium.com/javascript-scene/the-hidden-power-of-es6-generators-observable-async-flow-control-cfa4c7f31435)*
 
 *Дата публикации: 21.05.2016*
 
-![Nautilus Shell — Dave Spindle (CC-BY-NC-2.0)](images/fibonacci.jpeg)
+![Турбинный зал Волжской ГЭС — Kent Kanouse (CC BY-NC 2.0)](images/turbine.jpeg)
 
-In [7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710), I covered one obvious use-case for ES6 generator functions: producing iterable sequences of values one at a time. If you haven’t read that yet, you should. Iterables are the foundation of a lot of things in ES6+, and it’s going to be important for you to understand how they work.
+В статье «[7 выводов, которые я сделал, когда писал генератор последовательности Фибоначчи на JavaScript]()», я рассмотрел один очевидный случай использования генератора ES6: создание повторяющихся последовательностей значений по одному за раз. Если вы еще не читали, советую ознакомиться. Итерирование — основа многих функций в ES6+, поэтому важно понять, как оно работает.
 
-But in that article, I intentionally sidestepped another major use-case for generators. Arguably, the primary use case: Asynchronous flow control.
+В той статье я намеренно не рассказал об еще одном распространенном случае использования генераторов: управление асинхронным потоком.
 
 ### Async / Await
 
-You may have heard of the as-yet not officially standard async/await proposal for JavaScript.
+Возможно вы слышали о стандартных Async / Await в JavaScript.
 
-It did not make it into ES6. It will not make it into ES2016. It could become standard in ES2017, and then we’ll need to wait for all the JS engine implementations to land before we can use it. (Note: it works in Babel now, but that’s no guarantee. Tail call optimization worked in Babel for several months but got subsequently removed).
+Их нет в ES6 и не будет в ES2016. Они могут стать стандартными инструментами в ES2017: нужно будет дождаться их полной реализации в JS-движке, и мы сможем их использовать. _(Примечание: теперь Async / Await работает в Babel, но никаких гарантий нет. Оптимизация вызовов в Babel работала несколько месяцев, но впоследствии была удалена)._
 
-In spite of the wait, you’ll still find a bunch of articles talking about async/await. Why?
+Несмотря на ожидание, есть куча статей об async / await. Почему?
 
-It can turn code like this:
+Async / await может превратить такой код: 
+
 
 ```js
 const fetchSomething = () => new Promise((resolve) => {
@@ -34,7 +35,8 @@ const promiseFunc = () => new Promise((resolve) => {
 promiseFunc().then(res => console.log(res));
 ```
 
-Into code like this:
+В такой:
+
 
 ```js
 const fetchSomething = () => new Promise((resolve) => {
@@ -42,24 +44,24 @@ const fetchSomething = () => new Promise((resolve) => {
 });
 
 async function asyncFunction() {
-  const result = await fetchSomething(); // returns promise
+  const result = await fetchSomething(); // возвращает промис
 
-  // waits for promise and uses promise result
+  // ждём выполнение промиса и используем его результат
   return result + ' 2';
 }
 
 asyncFunction().then(result => console.log(result));
 ```
 
-Notice that in the first version, our promise-based function has an extra layer of nesting. The async/await version looks like regular, synchronous code, but it’s not. It yields the promise and exits the function, freeing the JS engine to do other things, and when the promise from `fetchSomething()` resolves, the function resumes, and the resolved promise value is assigned to `result`.
+Обратите внимание, что в первом примере функция, основанная на промисах, имеет дополнительный уровень вложенности. Версия async / await выглядит как обычный синхронный код, но это не так. Здесь показан промис и выход из функции, который освобождает JS-движок для других задач. После промиса `fetchSomething()` функция возобновляется, а полученному промису присваивается значение `result`.
 
-It’s asynchronous code that _looks and feels synchronous_. For JavaScript programmers who do a ton of asynchronous programming every day, this is basically the holy grail: All of the performance benefits of asynchronous code with none of the cognitive overhead.
+Это асинхронный код, который _выглядит и ведет себя как синхронный_. Для программистов на JavaScript, которые ежедневно сталкиваются с асинхронным программированием, это священный Грааль: все преимущества производительности асинхронного кода без каких-либо когнитивных издержек.
 
-What I’d like to take a deeper look at is how async / await might use generators under the hood… and how you can use them for synchronous style flow control right now, today, _without waiting for async / await to arrive_.
+Я хотел бы подробнее рассмотреть, как async / await используются в генераторах. Также рассмотрим, как управлять потоком синхронно уже сейчас, _не дожидаясь реализации async / await_.
 
-### Generator Review
+### Генераторы
 
-Generator functions are a new feature in ES6 that allow a function to _generate many values over time_ by returning an object which can be iterated over… an iterable with a `.next()` method that returns objects like this:
+Генераторы — это новая возможность в ES6, которая позволяет функции генерировать множество значений в произвольный момент времени и возвращать итерируемый объект методом `.next()`:
 
 ```js
 {
@@ -68,9 +70,10 @@ Generator functions are a new feature in ES6 that allow a function to _generate 
 }
 ```
 
-The `done` property indicates whether or not the generator has yielded its last value.
+Свойство `done` указывает, вернул ли генератор последнее значение.
 
-The iterator protocol is used by a lot of things in JavaScript, including the new `for…of` loop, the array rest/spread operator, and so on.
+Протокол итератора используется в JavaScript повсеместно: в новом цикле `for … of`, операторах массива rest/spread и т. д.
+
 
 ```js
 function* foo() {
@@ -90,9 +93,9 @@ const [...values] = foo();
 console.log(values); // ['a','b','c']
 ```
 
-### Talking Back to Generators
+### Вернемся к генераторам
 
-Here’s where things get really fun. Communication with generators can happen in both directions. In addition to receiving values from generators, you can inject values into the generator function. The iterator `.next()` method can take values to be assigned.
+Здесь все становится еще интересней. Взаимодействие с генераторами может происходить в обоих направлениях. Можно не только получить значения от генераторов, но и ввести в них значения. Метод iterator `.next()` может принимать значения, которые необходимо присвоить.
 
 ```js
 function* crossBridge() {
@@ -128,15 +131,15 @@ function* crossBridge() {
 // You may pass.
 ```
 
-There are a couple other ways to communicate to generators. You can throw errors at them. Instead of calling next, you can call `iter.throw(error)`, for example, to communicate that something went wrong fetching data for the generator. You can also force the generator to return with `iter.return()`.
+Есть еще несколько способов взаимодействия с генераторами. Вы можете перебирать ошибки в них с помощью throw: например, вы можете вызвать `iter.throw(error)`, чтобы сообщить, что что-то пошло не так при получении данные из генератора. Также генератор может вернуть код с помощью `iter.return()`.
 
-Both of those might come in handy to add error handling to flow control code.
+Обе команды могут пригодиться, чтобы добавить обработку ошибок в код управления потоком.
 
-### Generators + Promises = The Holy Grail
+### Генераторы + Промисы = Святой Грааль
 
-What if there was a function wrapping that generator that could detect when you yield a promise, wait for it to resolve, and then pass the resolved value back into the generator with the subsequent `.next()` call?
+Представим, что есть функция, которая возвращает генератор, который обнаруживает промисы, ждет их результата, а затем полученное значение возвращает обратно в генератор с последующим вызовом `.next()`.
 
-Then you could write async/await style code like this:
+Затем можно добавить async / await, как в этом примере:
 
 ```js
 const fetchSomething = () => new Promise((resolve) => {
@@ -155,15 +158,15 @@ asyncFunc('param1', 'param2', 'param3')
   .then(val => console.log(val));
 ```
 
-It turns out that a library like that already exists. It’s called **[Co.js](https://github.com/tj/co)**. But instead of teaching you how to use Co, let’s try to figure out how we could write something like that ourselves. Looking at the `crossBridge()` example above, it looks like it should be pretty easy.
+Оказывается, такая библиотека уже существует. Она называется **[Co.js](https://github.com/tj/co)**. Я не буду учить вас использовать Co: давайте попробуем выяснить, как самому можно написать что-то подобное. Судя по примеру с `crossBridge()` выше, это должно быть довольно легко.
 
-We’ll start with a simple `isPromise()` function:
+Начнем с простой функции `isPromise()`:
 
 ```js
 const isPromise = obj => Boolean(obj) && typeof obj.then === 'function';
 ```
 
-Next, we’ll need a way to iterate through the generator’s `.next()` calls, unwrap the promises, and wait for them to resolve before calling `.next()` again. Here’s a straightforward approach with no error handling. This is just a demonstration of the idea. You don’t want to use this in production — your errors would get swallowed, and it would be very hard to debug what’s going on:
+Затем нам понадобится способ повторить вызов генератора `.next()`, выполнить промисы и дождаться их результатов до следующего вызова `.next()`. Это довольно простой подход без обработки ошибок. Это всего лишь идея. Если вы не хотите использовать такой способ на практике, это приведет к ошибкам и проблемам с отладкой:
 
 ```js
 const next = (iter, callback, prev = undefined) => {
@@ -182,7 +185,7 @@ const next = (iter, callback, prev = undefined) => {
 };
 ```
 
-As you can see, we’re passing in a callback to return the final value. We communicate with the generator by passing the previous value into the `.next()` call at the top of the function. That’s what allows us to assign the result of the previous `yield` call to identifier:
+Как вы можете видеть, мы передаем обратный вызов, чтобы вернуть окончательное значение. Мы связываемся с генератором, передавая предыдущее значение через `.next()` в верхней части функции. Это позволяет нам получить результат предыдущего вызова `yield` для идентификатора:
 
 ```js
 const next = (iter, callback, prev = undefined) => {
@@ -218,7 +221,7 @@ const asyncFunc = gensync(function* () {
 });
 ```
 
-Of course, none of this works until you kick it all off — and what about the promise that actually returns the final value?
+Конечно, ничего не сработает, если не запустить — что насчет промиса, который возвращает окончательное значение?
 
 ```js
 // Returns a promise and kicks things
@@ -230,7 +233,7 @@ const gensync = (fn) =>
 });
 ```
 
-Let’s take a look at all of it together… the whole thing is about 22 lines of code, excluding the usage example:
+Давайте взглянем на все вместе: на 22 строки кода, за исключением примера использования:
 
 ```js
 const isPromise = obj => Boolean(obj) && typeof obj.then === 'function';
@@ -275,39 +278,40 @@ asyncFunc('param1', 'param2', 'param3')
   .then(val => console.log(val)); // 'future value 2'
 ```
 
-Now, if you want to start using this technique in your code, definitely use [Co.js](https://github.com/tj/co), instead. It has the error handling you’ll need (which I only skipped to avoid cluttering the example), it’s production tested, and it has a couple other nice features.
+Теперь, если вам нужно использовать эту технику в коде, используйте [Co.js](https://github.com/tj/co). У нее есть обработка ошибок (которую я пропустил, чтобы не загромождать пример), она протестирована на практике, у нее есть несколько других приятных функций.
 
-### From Promises to Observables
+### От промисов к Observable
 
-The example above is interesting, and Co.js is indeed useful to simplify asynchronous flow control. There’s just one problem: It returns a promise. As you’re probably aware, **a promise can only emit a single value or rejection…**
+Приведенный выше пример интересен, и Co.js действительно полезен для упрощения управления асинхронным потоком. Есть только одна проблема: Co.js возвращает промисы. Как вы, вероятно, знаете, **промис может выдать только одно значение или отказ...**
 
-A generator is capable of emitting many values over time. What else do we know about that can emit many values over time? An observable. You may recall from [7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710):
+Генератор способен выдавать **множество значений в произвольный момент времени**. Что еще может выдавать множество значений в произвольный момент времени? **Observable**. В статье «[7 выводов, которые я сделал, когда писал генератор последовательности Фибоначчи на JavaScript]()» я писал:
 
-> Initially, I was very excited about generators, but now that I’ve been living with them for a while, I haven’t found a lot of good use cases for generators in my real application code. For most use-cases I might use generators for, I reach for [RxJS](https://github.com/Reactive-Extensions/RxJS) instead because of its much richer API.
+> Сначала меня заинтересовали генераторы, но я изучил их подробнее и нашел довольно мало способов применить их при написании реального кода приложения. В большинстве случаев я использую [RxJS](https://github.com/Reactive-Extensions/RxJS) вместо генераторов, потому что у него намного более богатый API.
 
-Because (_unlike a generator function_) a promise can only emit one value, and (_like a generator function_) an observable can emit many, I personally believe that the observable API is a much better fit for async functions than a promise.
+_В отличие от генератора_, промис выдает всего только одно значение. _Как генератор_, observable выдает множество значений. Я считаю, что Observable API намного лучше подходит для асинхронных функций, чем промис.
 
-#### What’s an observable?
+#### Что такое Observable?
 
 ![](images/hidden-power-1.png)
 
-The table above is from the [GTOR: A General Theory of Reactivity](https://github.com/kriskowal/gtor), by Kris Kowal. It breaks things down neatly across space & time. Values that can be pulled synchronously consume space (values in memory), but are detached from time. They are **pull APIs**.
 
-Values which depend on some event in time can’t be consumed synchronously. You must wait for the values to be produced before you can consume them. Such values are **push APIs**, and always have some kind of subscription or notification mechanism. In JavaScript, that generally takes the form of a callback function.
+Выше приведена таблица из [GTOR: A General Theory of Reactivity](https://github.com/kriskowal/gtor) Криса Коваля (Kris Kowal). Она точно описывает связь с пространством и временем. Значения, которые можно получить синхронно, занимают пространство (значения в памяти) и отделены от времени. Это **pull API**.
 
-When dealing with future values, you need to be notified when a value becomes available. That’s the **push**.
+Значения, зависящие от некоторого события во времени, нельзя использовать синхронно. Чтобы использовать значения, сначала нужно их получить. Это **push API**, у них всегда есть какой-то механизм уведомления. В JavaScript push API обычно принимает форму функции обратного вызова.
 
-A promise is a push mechanism that calls some code after the promise has been resolved or rejected with a single value.
+Если вы работаете с будущими значениями, когда значение станет доступным, вы получите уведомление. Это **push**.
 
-An observable is like a promise, but it calls some code every time a new value becomes available, and _can emit many values over time_.
+Промис — это push-механизм, который возвращает код после того, как был получен результат промиса (разрешено или отклонено) с одним значением.
 
-The core feature of an observable is a `.subscribe()` method which takes three values:
+Observable похож на промис, но он возвращает код каждый раз, когда новое значение становится доступным и _может генерировать множество значений в произвольный момент времени_.
 
-- **onNext** — Called each time the observable emits a value.
-- **onError** — Called when the observable encounters an error or fails to generate the data to emit. After an error, no further values will be emitted, and `onCompleted` will not be called.
-- **onCompleted** — Called after it has called `onNext` for the final time, but only if no errors were encountered.
+Основной функцией Observable является метод `.subscribe()`, который принимает три значения:
 
-So, if we want to implement an observable API for our synchronous-style async functions, we just need a way to pass in those parameters. Let’s take a crack at that, leaving `onError` for later:
+- **onNext** — Возвращается каждый раз, когда observable генерирует значение.
+- **onError** —  вызывается, когда Observable сталкивается с ошибкой или не может генерировать данные для обработки. После ошибки никакие дополнительные значения не будут сгенерированы, и `onCompleted` не будет вызван.
+- **onCompleted** — Вызывается после последнего вызова `onNext`, но только в том случае, если ошибки не встречались.
+
+Итак, если мы хотим реализовать Observable API для асинхронных функций, похожих на синхронные, нам нужен простой способ задать эти параметры. Оставим `onError` на потом и рассмотрим такой пример:
 
 ```js
 const isPromise = obj => Boolean(obj) && typeof obj.then === 'function';
@@ -372,8 +376,8 @@ asyncFunc('a param', 'another param', 'more params!')
 // done.
 ```
 
-I really like this version, because it feels a lot more versatile to me. In fact, I like it so much, I’ve fleshed it out a bit, renamed it to Ogen, added error handling and a true Rx Observable object (which means you can `.map()`, `.filter()` and `.skip()` to your heart’s content. [Among other things](https://github.com/Reactive-Extensions/RxJS/blob/master/doc/libraries/main/rx.md#observable-instance-methods).
+Мне очень нравится эта версия: мне кажется, что она гораздо более универсальна. На самом деле, мне она нравится настолько, что я немного изменил ее, переименовал в Ogen, добавил обработку ошибок и истинный объект Rx Observable: теперь можно использовать `.map()`, `.filter()`,`.skip()` и [много другое](https://github.com/Reactive-Extensions/RxJS/blob/master/doc/libraries/main/rx.md#observable-instance-methods).
 
-Check out [Ogen on GitHub](https://github.com/ericelliott/ogen).
+Найти Ogen вы можете на [GitHub](https://github.com/ericelliott/ogen).
 
-There are lots of ways observables can improve your asynchronous flow control, which is probably the main reason I haven’t used generators a lot more, but now that I can mix and match synchronous-style code and observables seamlessly with Ogen, maybe I’ll start to use generators a whole lot more.
+Observable улучшает управление асинхронным потоком несколькими разными способами. Именно поэтому я больше не использую генераторы так часто, как раньше. Тем не менее, теперь я умею с легкостью комбинировать и сопоставлять асинхронный код и Observable с Ogen: это значит, что я начну использовать генераторы намного чаще.
