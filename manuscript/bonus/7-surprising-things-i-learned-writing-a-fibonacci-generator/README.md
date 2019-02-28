@@ -1,4 +1,4 @@
-# 7 выводов, которые я сделал, когда писал генератор последовательности Фибоначчи на JavaScript
+# 7 выводов, которые я сделал, когда писал генератор последовательности Фибоначчи на JavaScript {#7-surprising-things-i-learned-writing-a-fibonacci-generator}
 
 *Перевод статьи Eric Elliott: [7 Surprising Things I Learned Writing a Fibonacci Generator in JavaScript](https://medium.com/javascript-scene/7-surprising-things-i-learned-writing-a-fibonacci-generator-4886a5c87710)*
 
