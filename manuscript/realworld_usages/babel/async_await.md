@@ -14,7 +14,7 @@
 }
 ```
 
-Учитывая приведенный ниже JavaScript-код,
+Учитывая приведённый ниже JavaScript-код,
 
 ```js
 async function foo() {
